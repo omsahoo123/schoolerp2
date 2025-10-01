@@ -27,10 +27,48 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
+import { useEffect, useState } from "react";
+
+type NavLink = {
+    href: string;
+    label: string;
+};
+
+const navLinksByRole: Record<string, NavLink[]> = {
+    Admin: [
+        { href: "/", label: "Dashboard" },
+        { href: "/admissions", label: "Admissions" },
+        { href: "/students", label: "Students" },
+        { href: "/teachers", label: "Teachers" },
+        { href: "/finance", label: "Finance" },
+    ],
+    Teacher: [
+        { href: "/", label: "Dashboard" },
+        { href: "/students", label: "Students" },
+        { href: "/homework", label: "Homework" },
+        { href: "/attendance", label: "Attendance" },
+    ],
+    Student: [
+        { href: "/", label: "Dashboard" },
+        { href: "/homework", label: "Homework" },
+        { href: "/attendance", label: "Attendance" },
+        { href: "/fees", label: "My Fees" },
+    ],
+    Finance: [
+        { href: "/", label: "Dashboard" },
+        { href: "/fee-management", label: "Fee Management" },
+        { href: "/reports", label: "Reports" },
+    ],
+};
 
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    setUserRole(sessionStorage.getItem("userRole"));
+  }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem("authenticated");
@@ -42,47 +80,32 @@ export default function Header() {
     router.push("/login");
   };
 
+  const currentNavLinks = userRole ? navLinksByRole[userRole] || [] : [];
+
+  const NavLinks = ({isSheet = false}: {isSheet?: boolean}) => (
+    <nav className={isSheet ? "grid gap-6 text-lg font-medium" : "hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6"}>
+        <Link
+            href="/"
+            className="flex items-center gap-2 text-lg font-semibold md:text-base"
+        >
+            <School className="h-6 w-6" />
+            <span className={isSheet ? "" : "sr-only"}>School ERP</span>
+        </Link>
+        {currentNavLinks.map(link => (
+             <Link
+                key={link.href}
+                href={link.href}
+                className={link.href === "/" ? "text-foreground transition-colors hover:text-foreground" : "text-muted-foreground transition-colors hover:text-foreground"}
+            >
+                {link.label}
+            </Link>
+        ))}
+    </nav>
+  );
+
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-40">
-        <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-          <Link
-            href="#"
-            className="flex items-center gap-2 text-lg font-semibold md:text-base"
-          >
-            <School className="h-6 w-6" />
-            <span className="sr-only">School ERP</span>
-          </Link>
-          <Link
-            href="#"
-            className="text-foreground transition-colors hover:text-foreground"
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Admissions
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Students
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Teachers
-          </Link>
-          <Link
-            href="#"
-            className="text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Finance
-          </Link>
-        </nav>
+        <NavLinks />
         <Sheet>
           <SheetTrigger asChild>
             <Button
@@ -95,42 +118,7 @@ export default function Header() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left">
-            <nav className="grid gap-6 text-lg font-medium">
-              <Link
-                href="#"
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
-                <School className="h-6 w-6" />
-                <span className="sr-only">School ERP</span>
-              </Link>
-              <Link href="#" className="hover:text-foreground">
-                Dashboard
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Admissions
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Students
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Teachers
-              </Link>
-              <Link
-                href="#"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                Finance
-              </Link>
-            </nav>
+            <NavLinks isSheet={true} />
           </SheetContent>
         </Sheet>
       <div className="flex w-full items-center justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
