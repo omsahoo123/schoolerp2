@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Chool ERP',
+  title: 'School ERP',
   description: 'A modern, low-cost ERP for educational institutions.',
 };
 

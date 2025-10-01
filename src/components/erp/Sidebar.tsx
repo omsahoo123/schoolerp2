@@ -50,7 +50,7 @@ export default function Sidebar({ isSheet = false } : SidebarProps) {
         className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
       >
         <School className="h-4 w-4 transition-all group-hover:scale-110" />
-        <span className="sr-only">Chool ERP</span>
+        <span className="sr-only">School ERP</span>
       </Link>
       {navLinks.map((link) => (
         <Wrapper key={link.href}>
@@ -88,7 +88,7 @@ export default function Sidebar({ isSheet = false } : SidebarProps) {
                 <div className="sticky top-0 p-4 border-b">
                      <Link href="/" className="flex items-center gap-2 font-semibold font-headline">
                         <School className="h-6 w-6 text-primary" />
-                        <span>Chool ERP</span>
+                        <span>School ERP</span>
                     </Link>
                 </div>
                 <div className="flex-1 overflow-auto p-4">
