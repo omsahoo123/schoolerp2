@@ -5,14 +5,20 @@ import KpiCard from "./KpiCard";
 import AttendanceView from "./AttendanceView";
 import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
+import { useEffect, useState } from "react";
 
 export default function StudentDashboard() {
   const { students, studentAttendance } = useData();
-  // Mocking a logged-in student
-  const loggedInStudent = students.find(s => s.id === 'S004'); // Myra Kumar
+  const [studentId, setStudentId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setStudentId(sessionStorage.getItem("studentId"));
+  }, []);
+  
+  const loggedInStudent = students.find(s => s.id === studentId); 
 
   if (!loggedInStudent) {
-    return <p>Student not found.</p>;
+    return <p>Student not found. Please log in again.</p>;
   }
 
   const attendanceData = studentAttendance.find(sa => sa.studentId === loggedInStudent.id);

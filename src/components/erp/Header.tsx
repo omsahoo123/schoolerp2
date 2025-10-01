@@ -62,6 +62,8 @@ export default function Header() {
   const handleLogout = () => {
     sessionStorage.removeItem("authenticated");
     sessionStorage.removeItem("userRole");
+    sessionStorage.removeItem("userName");
+    sessionStorage.removeItem("studentId");
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",

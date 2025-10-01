@@ -21,18 +21,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { School } from "lucide-react";
+import { useData } from "@/lib/data-context";
 
 const loginFormSchema = z.object({
-  role: z.string({ required_error: "Please select a role." }),
   userId: z.string().min(1, "User ID is required."),
   password: z.string().min(1, "Password is required."),
 });
@@ -42,6 +35,7 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
+  const { users } = useData();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
@@ -52,18 +46,34 @@ export default function LoginPage() {
   });
 
   function onSubmit(data: LoginFormValues) {
-    // In a real application, you would handle authentication here.
-    // For this prototype, we'll just simulate a successful login.
-    toast({
-      title: "Login Successful",
-      description: `Welcome, ${data.role}!`,
-    });
-    
-    // Simulate setting an authentication token
-    sessionStorage.setItem("authenticated", "true");
-    sessionStorage.setItem("userRole", data.role);
+    const user = users.find(
+      (u) => u.userId === data.userId && u.password === data.password
+    );
 
-    router.push("/");
+    if (user) {
+      toast({
+        title: "Login Successful",
+        description: `Welcome, ${user.name}!`,
+      });
+
+      sessionStorage.setItem("authenticated", "true");
+      sessionStorage.setItem("userRole", user.role);
+      sessionStorage.setItem("userName", user.name);
+      if (user.studentId) {
+        sessionStorage.setItem("studentId", user.studentId);
+      } else {
+        sessionStorage.removeItem("studentId");
+      }
+
+
+      router.push("/");
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: "Invalid user ID or password.",
+      });
+    }
   }
 
   return (
@@ -81,29 +91,6 @@ export default function LoginPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>User Role</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select your role" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="Admin">Admin</SelectItem>
-                        <SelectItem value="Teacher">Teacher</SelectItem>
-                        <SelectItem value="Student">Student</SelectItem>
-                        <SelectItem value="Finance">Finance</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="userId"

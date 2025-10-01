@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -70,4 +70,11 @@ export const admissions: Admission[] = [
     { month: 'April', admitted: 22, capacity: 25 },
     { month: 'May', admitted: 19, capacity: 25 },
     { month: 'June', admitted: 24, capacity: 30 },
+];
+
+export const users: User[] = [
+  { userId: 'admin', password: 'password', role: 'Admin', name: 'Admin User' },
+  { userId: 'teacher', password: 'password', role: 'Teacher', name: 'Teacher User' },
+  { userId: 'myra', password: 'password', role: 'Student', name: 'Myra Kumar', studentId: 'S004' },
+  { userId: 'finance', password: 'password', role: 'Finance', name: 'Finance User' },
 ];

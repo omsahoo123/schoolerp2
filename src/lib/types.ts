@@ -53,3 +53,13 @@ export interface Admission {
     admitted: number;
     capacity: number;
 }
+
+export type UserRole = 'Admin' | 'Teacher' | 'Student' | 'Finance';
+
+export interface User {
+  userId: string;
+  password: string;
+  role: UserRole;
+  name: string;
+  studentId?: string;
+}
