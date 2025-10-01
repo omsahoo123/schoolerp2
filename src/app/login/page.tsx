@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/select";
 
 const loginFormSchema = z.object({
+  username: z.string().min(1, "User ID is required."),
+  password: z.string().min(1, "Password is required."),
   role: z.string({ required_error: "Please select a role." }),
 });
 
@@ -43,25 +45,38 @@ export default function LoginPage() {
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+    }
   });
 
   function onSubmit(data: LoginFormValues) {
-    toast({
-      title: "Login Successful",
-      description: `Welcome, ${data.role}!`,
-    });
+    // For now, we'll just check if the fields are not empty
+    if (data.username && data.password) {
+        toast({
+            title: "Login Successful",
+            description: `Welcome, ${data.role}!`,
+        });
 
-    sessionStorage.setItem("authenticated", "true");
-    sessionStorage.setItem("userRole", data.role);
-    
-    // Hard-coding studentId for 'Student' role for now
-    if (data.role === 'Student') {
-      sessionStorage.setItem("studentId", "S004");
+        sessionStorage.setItem("authenticated", "true");
+        sessionStorage.setItem("userRole", data.role);
+        
+        // Hard-coding studentId for 'Student' role for now
+        if (data.role === 'Student') {
+            sessionStorage.setItem("studentId", "S004");
+        } else {
+            sessionStorage.removeItem("studentId");
+        }
+
+        router.push("/");
     } else {
-      sessionStorage.removeItem("studentId");
+         toast({
+            title: "Login Failed",
+            description: "Please check your credentials.",
+            variant: "destructive",
+        });
     }
-
-    router.push("/");
   }
 
   return (
@@ -74,11 +89,37 @@ export default function LoginPage() {
                 </div>
             </div>
           <CardTitle className="text-3xl font-bold font-headline">School ERP</CardTitle>
-          <CardDescription>Select your role to login</CardDescription>
+          <CardDescription>Enter your credentials to login</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>User ID</FormLabel>
+                    <FormControl>
+                        <Input placeholder="Your user ID" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                        <Input type="password" placeholder="Your password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="role"
