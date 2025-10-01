@@ -53,3 +53,11 @@ export interface Admission {
     admitted: number;
     capacity: number;
 }
+
+export interface User {
+  id: string;
+  userId: string;
+  password: string; // In a real app, this would be a hash
+  role: 'Admin' | 'Teacher' | 'Student' | 'Finance';
+  studentId?: string; // Only for student users
+}

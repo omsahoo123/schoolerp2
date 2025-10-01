@@ -1,8 +1,15 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
 const studentImages = PlaceHolderImages.filter(p => p.id.startsWith('student-avatar'));
+
+export const users: User[] = [
+  { id: 'U001', userId: 'admin', password: 'password', role: 'Admin' },
+  { id: 'U002', userId: 'teacher', password: 'password', role: 'Teacher' },
+  { id: 'U003', userId: 'student', password: 'password', role: 'Student', studentId: 'S004' },
+  { id: 'U004', userId: 'finance', password: 'password', role: 'Finance' },
+];
 
 export const students: Student[] = [
   { id: 'S001', name: 'Aarav Sharma', class: '10', section: 'A', rollNumber: '1', avatar: studentImages[0].imageUrl },
