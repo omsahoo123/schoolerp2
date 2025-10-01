@@ -23,11 +23,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { School } from "lucide-react";
-import { useData } from "@/lib/data-context";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const loginFormSchema = z.object({
-  userId: z.string().min(1, "User ID is required."),
-  password: z.string().min(1, "Password is required."),
+  role: z.string({ required_error: "Please select a role." }),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -35,45 +40,28 @@ type LoginFormValues = z.infer<typeof loginFormSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { users } = useData();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginFormSchema),
-    defaultValues: {
-      userId: "",
-      password: "",
-    },
   });
 
   function onSubmit(data: LoginFormValues) {
-    const user = users.find(
-      (u) => u.userId === data.userId && u.password === data.password
-    );
+    toast({
+      title: "Login Successful",
+      description: `Welcome, ${data.role}!`,
+    });
 
-    if (user) {
-      toast({
-        title: "Login Successful",
-        description: `Welcome, ${user.name}!`,
-      });
-
-      sessionStorage.setItem("authenticated", "true");
-      sessionStorage.setItem("userRole", user.role);
-      sessionStorage.setItem("userName", user.name);
-      if (user.studentId) {
-        sessionStorage.setItem("studentId", user.studentId);
-      } else {
-        sessionStorage.removeItem("studentId");
-      }
-
-
-      router.push("/");
+    sessionStorage.setItem("authenticated", "true");
+    sessionStorage.setItem("userRole", data.role);
+    
+    // Hard-coding studentId for 'Student' role for now
+    if (data.role === 'Student') {
+      sessionStorage.setItem("studentId", "S004");
     } else {
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid user ID or password.",
-      });
+      sessionStorage.removeItem("studentId");
     }
+
+    router.push("/");
   }
 
   return (
@@ -86,33 +74,30 @@ export default function LoginPage() {
                 </div>
             </div>
           <CardTitle className="text-3xl font-bold font-headline">School ERP</CardTitle>
-          <CardDescription>Enter your credentials to access your dashboard</CardDescription>
+          <CardDescription>Select your role to login</CardDescription>
         </CardHeader>
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
-                name="userId"
+                name="role"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>User ID</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your user ID" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <Input type="password" placeholder="Enter your password" {...field} />
-                    </FormControl>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Teacher">Teacher</SelectItem>
+                        <SelectItem value="Student">Student</SelectItem>
+                        <SelectItem value="Finance">Finance</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}

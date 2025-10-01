@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import AdminDashboard from "@/components/erp/AdminDashboard";
 import TeacherDashboard from "@/components/erp/TeacherDashboard";
 import StudentDashboard from "@/components/erp/StudentDashboard";
 import FinanceDashboard from "@/components/erp/FinanceDashboard";
 import Header from "@/components/erp/Header";
-import { useRouter } from "next/navigation";
 
 export default function Home() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -42,7 +42,9 @@ export default function Home() {
       case 'Finance':
         return <FinanceDashboard />;
       default:
-        return <p>Invalid role. Please log in again.</p>;
+        // For simplicity, redirect to login if role is invalid
+        router.push('/login');
+        return null;
     }
   }
 

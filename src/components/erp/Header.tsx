@@ -62,7 +62,6 @@ export default function Header() {
   const handleLogout = () => {
     sessionStorage.removeItem("authenticated");
     sessionStorage.removeItem("userRole");
-    sessionStorage.removeItem("userName");
     sessionStorage.removeItem("studentId");
     toast({
       title: "Logged Out",
@@ -86,7 +85,7 @@ export default function Header() {
              <Link
                 key={link.href}
                 href={link.href}
-                className={link.href === "/" ? "text-foreground transition-colors hover:text-foreground" : "text-muted-foreground transition-colors hover:text-foreground"}
+                className={"text-muted-foreground transition-colors hover:text-foreground"}
             >
                 {link.label}
             </Link>

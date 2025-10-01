@@ -5,15 +5,10 @@ import KpiCard from "./KpiCard";
 import AttendanceView from "./AttendanceView";
 import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
-import { useEffect, useState } from "react";
 
 export default function StudentDashboard() {
   const { students, studentAttendance } = useData();
-  const [studentId, setStudentId] = useState<string | null>(null);
-
-  useEffect(() => {
-    setStudentId(sessionStorage.getItem("studentId"));
-  }, []);
+  const studentId = sessionStorage.getItem("studentId");
   
   const loggedInStudent = students.find(s => s.id === studentId); 
 
