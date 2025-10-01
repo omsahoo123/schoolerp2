@@ -38,26 +38,15 @@ const navLinksByRole: Record<string, NavLink[]> = {
     Admin: [
         { href: "/", label: "Dashboard" },
         { href: "/admissions", label: "Admissions" },
-        { href: "/students", label: "Students" },
-        { href: "/teachers", label: "Teachers" },
-        { href: "/finance", label: "Finance" },
     ],
     Teacher: [
         { href: "/", label: "Dashboard" },
-        { href: "/students", label: "Students" },
-        { href: "/homework", label: "Homework" },
-        { href: "/attendance", label: "Attendance" },
     ],
     Student: [
         { href: "/", label: "Dashboard" },
-        { href: "/homework", label: "Homework" },
-        { href: "/attendance", label: "Attendance" },
-        { href: "/fees", label: "My Fees" },
     ],
     Finance: [
         { href: "/", label: "Dashboard" },
-        { href: "/fee-management", label: "Fee Management" },
-        { href: "/reports", label: "Reports" },
     ],
 };
 
