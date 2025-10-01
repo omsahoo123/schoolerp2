@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Bell,
   GraduationCap,
@@ -26,8 +27,22 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Sidebar from "./Sidebar";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Header() {
+  const router = useRouter();
+  const { toast } = useToast();
+
+  const handleLogout = () => {
+    sessionStorage.removeItem("authenticated");
+    sessionStorage.removeItem("userRole");
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+    });
+    router.push("/login");
+  };
+
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-card px-4 md:px-6 z-40">
       <div className="flex w-full items-center justify-between md:justify-end gap-4 md:ml-auto md:gap-2 lg:gap-4">
@@ -64,7 +79,7 @@ export default function Header() {
                 <DropdownMenuItem>Profile</DropdownMenuItem>
                 <DropdownMenuItem>Settings</DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>Logout</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
         </div>
