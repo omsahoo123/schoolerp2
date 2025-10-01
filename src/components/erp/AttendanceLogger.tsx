@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -38,7 +38,7 @@ type AttendanceLoggerProps = {
 type AttendanceState = Record<string, boolean>;
 
 export default function AttendanceLogger({ open, onOpenChange }: AttendanceLoggerProps) {
-  const { students: mockStudents, studentAttendance, setStudentAttendance } = useData();
+  const { students: mockStudents, setStudentAttendance } = useData();
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -49,22 +49,31 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
   const classes = [...new Set(mockStudents.map(s => s.class))];
   const sections = [...new Set(mockStudents.filter(s => s.class === selectedClass).map(s => s.section))];
 
-  const handleClassChange = (value: string) => {
-    setSelectedClass(value);
+  useEffect(() => {
     setSelectedSection('');
     setStudents([]);
     setAttendance({});
+  }, [selectedClass]);
+  
+  useEffect(() => {
+    if (selectedClass && selectedSection) {
+        const filteredStudents = mockStudents.filter(s => s.class === selectedClass && s.section === selectedSection);
+        setStudents(filteredStudents);
+        const initialAttendance = filteredStudents.reduce((acc, student) => {
+          acc[student.id] = true; // Default to present
+          return acc;
+        }, {} as AttendanceState);
+        setAttendance(initialAttendance);
+    }
+  }, [selectedClass, selectedSection, mockStudents]);
+
+
+  const handleClassChange = (value: string) => {
+    setSelectedClass(value);
   };
 
   const handleSectionChange = (value: string) => {
     setSelectedSection(value);
-    const filteredStudents = mockStudents.filter(s => s.class === selectedClass && s.section === value);
-    setStudents(filteredStudents);
-    const initialAttendance = filteredStudents.reduce((acc, student) => {
-      acc[student.id] = true; // Default to present
-      return acc;
-    }, {} as AttendanceState);
-    setAttendance(initialAttendance);
   };
 
   const handleAttendanceChange = (studentId: string, isPresent: boolean) => {
@@ -85,26 +94,24 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
     const absentCount = students.length - presentCount;
 
     setStudentAttendance(prevAttendance => {
-      const newAttendance = [...prevAttendance];
+      const newAttendanceData = [...prevAttendance];
       
       Object.entries(attendance).forEach(([studentId, isPresent]) => {
-        const studentIndex = newAttendance.findIndex(sa => sa.studentId === studentId);
+        const studentIndex = newAttendanceData.findIndex(sa => sa.studentId === studentId);
         const newRecord = { date: selectedDate, status: isPresent ? 'Present' : 'Absent' as const };
 
         if (studentIndex > -1) {
-          // Check if a record for the selected date already exists and update it
-          const recordIndex = newAttendance[studentIndex].records.findIndex(r => r.date === selectedDate);
+          const recordIndex = newAttendanceData[studentIndex].records.findIndex(r => r.date === selectedDate);
           if (recordIndex > -1) {
-            newAttendance[studentIndex].records[recordIndex] = newRecord;
+            newAttendanceData[studentIndex].records[recordIndex] = newRecord;
           } else {
-            newAttendance[studentIndex].records.unshift(newRecord);
+            newAttendanceData[studentIndex].records.unshift(newRecord);
           }
         } else {
-          // If no attendance records exist for the student, create a new entry
-          newAttendance.push({ studentId, records: [newRecord] });
+          newAttendanceData.push({ studentId, records: [newRecord] });
         }
       });
-      return newAttendance;
+      return newAttendanceData;
     });
 
     toast({
