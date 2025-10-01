@@ -18,7 +18,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart"
-import { Fee, fees as mockFees } from "@/lib/data"
+import { useData } from "@/lib/data-context"
 
 const chartConfig = {
   fees: {
@@ -39,7 +39,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export default function FeeStatusChart() {
-  const [fees, setFees] = React.useState<Fee[]>(mockFees);
+  const { fees } = useData();
 
   const chartData = React.useMemo(() => {
     const statusCounts = fees.reduce((acc, fee) => {

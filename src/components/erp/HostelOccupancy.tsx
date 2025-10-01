@@ -2,14 +2,15 @@
 
 import { BedDouble, UserCheck, UserX } from "lucide-react";
 import KpiCard from "./KpiCard";
-import { hostelRooms as mockHostelRooms } from "@/lib/data";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useData } from "@/lib/data-context";
 
 export default function HostelOccupancy() {
-  const totalCapacity = mockHostelRooms.reduce((acc, room) => acc + room.capacity, 0);
-  const totalOccupants = mockHostelRooms.reduce((acc, room) => acc + room.occupants.length, 0);
+  const { hostelRooms } = useData();
+  const totalCapacity = hostelRooms.reduce((acc, room) => acc + room.capacity, 0);
+  const totalOccupants = hostelRooms.reduce((acc, room) => acc + room.occupants.length, 0);
   const availableSlots = totalCapacity - totalOccupants;
   const occupancyRate = totalCapacity > 0 ? (totalOccupants / totalCapacity) * 100 : 0;
 
@@ -44,7 +45,7 @@ export default function HostelOccupancy() {
           <KpiCard
             title="Total Rooms"
             icon={<BedDouble className="h-5 w-5" />}
-            value={mockHostelRooms.length.toString()}
+            value={hostelRooms.length.toString()}
             description="Across all hostel blocks"
           />
         </div>
@@ -60,7 +61,7 @@ export default function HostelOccupancy() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockHostelRooms.map((room) => (
+                {hostelRooms.map((room) => (
                   <TableRow key={room.id}>
                     <TableCell className="font-medium">{room.roomNumber}</TableCell>
                     <TableCell>{room.occupants.length} / {room.capacity}</TableCell>

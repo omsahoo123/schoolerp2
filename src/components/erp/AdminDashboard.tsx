@@ -2,19 +2,20 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { BedDouble, DollarSign, UserPlus, Users } from "lucide-react";
+import { BedDouble, BookOpen, DollarSign, UserPlus, Users } from "lucide-react";
 import KpiCard from "./KpiCard";
-import { students as mockStudents, fees as mockFees, hostelRooms as mockHostelRooms } from "@/lib/data";
 import FeeStatusChart from "./FeeStatusChart";
 import HostelOccupancy from "./HostelOccupancy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useData } from "@/lib/data-context";
+import Homework from "./Homework";
 
 export default function AdminDashboard() {
-  const [students, setStudents] = useState(mockStudents);
-  const totalStudents = students.length;
-  const feesDue = mockFees.filter(f => f.status === 'Due' || f.status === 'Overdue').length;
-  const occupancyRate = (mockHostelRooms.reduce((acc, room) => acc + room.occupants.length, 0) / mockHostelRooms.reduce((acc, room) => acc + room.capacity, 0) * 100).toFixed(0);
+    const { students, fees, hostelRooms } = useData();
+    const totalStudents = students.length;
+    const feesDue = fees.filter(f => f.status === 'Due' || f.status === 'Overdue').length;
+    const occupancyRate = (hostelRooms.reduce((acc, room) => acc + room.occupants.length, 0) / hostelRooms.reduce((acc, room) => acc + room.capacity, 0) * 100).toFixed(0);
 
   return (
     <div className="space-y-6">
@@ -40,7 +41,22 @@ export default function AdminDashboard() {
           description="Current hostel occupancy rate"
           onClick={() => alert('Opening hostel details...')}
         />
-        <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground">
+         <KpiCard
+          title="Manage Homework"
+          icon={<BookOpen className="h-6 w-6" />}
+          value="Assign & Review"
+          description="Manage homework for all classes"
+        />
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <FeeStatusChart />
+        <HostelOccupancy />
+         <div className="lg:col-span-3">
+            <Homework isTeacher={true} />
+        </div>
+      </div>
+       <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground mt-6">
           <UserPlus className="h-8 w-8 mb-2" />
           <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
           <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
@@ -48,12 +64,6 @@ export default function AdminDashboard() {
             <Button>Go to Admissions</Button>
           </Link>
         </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <FeeStatusChart />
-        <HostelOccupancy />
-      </div>
     </div>
   );
 }

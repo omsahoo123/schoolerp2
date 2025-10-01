@@ -4,17 +4,18 @@ import { BookOpen, CalendarDays, CheckCircle, Percent } from "lucide-react";
 import KpiCard from "./KpiCard";
 import AttendanceView from "./AttendanceView";
 import Homework from "./Homework";
-import { students as mockStudents, studentAttendance as mockAttendance } from "@/lib/data";
+import { useData } from "@/lib/data-context";
 
 export default function StudentDashboard() {
+  const { students, studentAttendance } = useData();
   // Mocking a logged-in student
-  const loggedInStudent = mockStudents.find(s => s.id === 'S004'); // Myra Kumar
+  const loggedInStudent = students.find(s => s.id === 'S004'); // Myra Kumar
 
   if (!loggedInStudent) {
     return <p>Student not found.</p>;
   }
 
-  const attendanceData = mockAttendance.find(sa => sa.studentId === loggedInStudent.id);
+  const attendanceData = studentAttendance.find(sa => sa.studentId === loggedInStudent.id);
   const totalPresent = attendanceData?.records.filter(r => r.status === 'Present').length || 0;
   const totalAbsent = attendanceData?.records.filter(r => r.status === 'Absent').length || 0;
   const totalWorkingDays = totalPresent + totalAbsent;

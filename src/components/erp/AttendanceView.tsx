@@ -3,14 +3,15 @@
 import * as React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
-import { studentAttendance } from "@/lib/data";
 import { parseISO } from "date-fns";
+import { useData } from "@/lib/data-context";
 
 type AttendanceViewProps = {
   studentId: string;
 };
 
 export default function AttendanceView({ studentId }: AttendanceViewProps) {
+  const { studentAttendance } = useData();
   const [date, setDate] = React.useState<Date | undefined>(new Date());
   const attendanceData = studentAttendance.find(sa => sa.studentId === studentId);
 

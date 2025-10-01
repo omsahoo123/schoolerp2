@@ -6,11 +6,12 @@ import KpiCard from "./KpiCard";
 import AttendanceLogger from "./AttendanceLogger";
 import StudentCredentials from "./StudentCredentials";
 import Homework from "./Homework";
-import { students } from "@/lib/data";
+import { useData } from "@/lib/data-context";
 
 export default function TeacherDashboard() {
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
   const [isCredentialsOpen, setIsCredentialsOpen] = useState(false);
+  const { students } = useData();
 
   // Example data for a specific teacher
   const assignedClasses = ["10A", "11A"];
@@ -25,6 +26,7 @@ export default function TeacherDashboard() {
           value="Today's Log"
           description="Mark student attendance"
           onClick={() => setIsAttendanceOpen(true)}
+          className="bg-card text-card-foreground"
         />
         <KpiCard
           title="Total Students"

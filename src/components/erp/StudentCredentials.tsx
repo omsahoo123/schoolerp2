@@ -19,9 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { students as mockStudents } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Copy } from "lucide-react";
+import { useData } from "@/lib/data-context";
 
 type StudentCredentialsProps = {
   open: boolean;
@@ -29,6 +29,7 @@ type StudentCredentialsProps = {
 };
 
 export default function StudentCredentials({ open, onOpenChange }: StudentCredentialsProps) {
+  const { students } = useData();
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [generatedId, setGeneratedId] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
@@ -39,7 +40,7 @@ export default function StudentCredentials({ open, onOpenChange }: StudentCreden
       toast({ title: "Error", description: "Please select a student.", variant: "destructive" });
       return;
     }
-    const student = mockStudents.find(s => s.id === selectedStudentId);
+    const student = students.find(s => s.id === selectedStudentId);
     if (!student) return;
 
     const studentId = `SCH-${student.name.split(' ')[0].toUpperCase()}${student.rollNumber}`;
@@ -71,7 +72,7 @@ export default function StudentCredentials({ open, onOpenChange }: StudentCreden
                 <SelectValue placeholder="Select a student..." />
               </SelectTrigger>
               <SelectContent>
-                {mockStudents.map(student => (
+                {students.map(student => (
                   <SelectItem key={student.id} value={student.id}>
                     {student.name} - Class {student.class}{student.section}
                   </SelectItem>

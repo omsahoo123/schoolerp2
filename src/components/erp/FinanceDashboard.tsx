@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { DollarSign, Receipt, TrendingUp, Users } from "lucide-react";
-import KpiCard from "./KpiCard";
-import { fees as mockFees, Fee } from "@/lib/data";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import FeeStatusChart from "./FeeStatusChart";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import FeeStatusChart from "./FeeStatusChart";
+import KpiCard from "./KpiCard";
+import { useData } from "@/lib/data-context";
 
 export default function FinanceDashboard() {
-  const [fees, setFees] = useState<Fee[]>(mockFees);
+  const { fees } = useData();
   const { toast } = useToast();
 
   const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0);
@@ -82,7 +81,7 @@ export default function FinanceDashboard() {
                       <TableCell>{fee.class}</TableCell>
                       <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
                       <TableCell>
-                        <Badge variant={fee.status === 'Paid' ? 'default' : fee.status === 'Due' ? 'secondary' : 'destructive'}>
+                        <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
                           {fee.status}
                         </Badge>
                       </TableCell>

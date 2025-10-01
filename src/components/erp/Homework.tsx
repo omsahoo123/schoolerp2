@@ -17,9 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { homeworks as mockHomeworks } from "@/lib/data";
 import { Homework as HomeworkType } from "@/lib/types";
 import { format } from "date-fns";
+import { useData } from "@/lib/data-context";
 
 type HomeworkProps = {
   isTeacher?: boolean;
@@ -28,7 +28,7 @@ type HomeworkProps = {
 };
 
 export default function Homework({ isTeacher = false, studentClass, studentSection }: HomeworkProps) {
-  const [homeworks, setHomeworks] = useState<HomeworkType[]>(mockHomeworks);
+  const { homeworks, setHomeworks } = useData();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
 

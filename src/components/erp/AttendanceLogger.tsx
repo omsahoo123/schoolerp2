@@ -17,7 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { students as mockStudents } from "@/lib/data";
 import { Student } from "@/lib/types";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -25,6 +24,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "@/lib/utils";
+import { useData } from "@/lib/data-context";
+import { format } from "date-fns";
 
 type AttendanceLoggerProps = {
   open: boolean;
@@ -34,6 +35,7 @@ type AttendanceLoggerProps = {
 type AttendanceState = Record<string, boolean>;
 
 export default function AttendanceLogger({ open, onOpenChange }: AttendanceLoggerProps) {
+  const { students: mockStudents, studentAttendance, setStudentAttendance } = useData();
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [students, setStudents] = useState<Student[]>([]);
@@ -66,8 +68,33 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
   };
 
   const handleSubmit = () => {
+    const today = format(new Date(), 'yyyy-MM-dd');
     const presentCount = Object.values(attendance).filter(Boolean).length;
     const absentCount = students.length - presentCount;
+
+    setStudentAttendance(prevAttendance => {
+      const newAttendance = [...prevAttendance];
+      
+      Object.entries(attendance).forEach(([studentId, isPresent]) => {
+        const studentIndex = newAttendance.findIndex(sa => sa.studentId === studentId);
+        const newRecord = { date: today, status: isPresent ? 'Present' : 'Absent' };
+
+        if (studentIndex > -1) {
+          // Check if a record for today already exists and update it
+          const recordIndex = newAttendance[studentIndex].records.findIndex(r => r.date === today);
+          if (recordIndex > -1) {
+            newAttendance[studentIndex].records[recordIndex] = newRecord;
+          } else {
+            newAttendance[studentIndex].records.unshift(newRecord);
+          }
+        } else {
+          // If no attendance records exist for the student, create a new entry
+          newAttendance.push({ studentId, records: [newRecord] });
+        }
+      });
+      return newAttendance;
+    });
+
     toast({
       title: "Attendance Submitted",
       description: `Class ${selectedClass}-${selectedSection}: ${presentCount} present, ${absentCount} absent.`,
