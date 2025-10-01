@@ -24,10 +24,12 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { School } from "lucide-react";
 import { useData } from "@/lib/data-context";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const loginFormSchema = z.object({
   username: z.string().min(1, "User ID is required."),
   password: z.string().min(1, "Password is required."),
+  role: z.string({ required_error: "Please select a role." }),
 });
 
 type LoginFormValues = z.infer<typeof loginFormSchema>;
@@ -47,7 +49,7 @@ export default function LoginPage() {
 
   function onSubmit(data: LoginFormValues) {
     const user = users.find(
-      (u) => u.userId === data.username && u.password === data.password
+      (u) => u.userId === data.username && u.password === data.password && u.role === data.role
     );
 
     if (user) {
@@ -69,7 +71,7 @@ export default function LoginPage() {
     } else {
          toast({
             title: "Login Failed",
-            description: "Invalid user ID or password.",
+            description: "Invalid credentials or role.",
             variant: "destructive",
         });
     }
@@ -90,6 +92,29 @@ export default function LoginPage() {
         <CardContent>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="role"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Role</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Teacher">Teacher</SelectItem>
+                        <SelectItem value="Student">Student</SelectItem>
+                        <SelectItem value="Finance">Finance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="username"
