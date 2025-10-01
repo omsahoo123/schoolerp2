@@ -49,7 +49,7 @@ export default function Home() {
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar />
-      <div className="flex flex-1 flex-col">
+      <div className="flex flex-1 flex-col md:pl-14">
         <Header />
         <main className="flex-1 p-4 sm:p-6 md:p-8">
           <Tabs defaultValue="admin" className="w-full">

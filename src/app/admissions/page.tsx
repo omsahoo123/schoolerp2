@@ -80,7 +80,7 @@ export default function AdmissionsPage() {
     <div className="flex min-h-screen w-full flex-col bg-background">
       <div className="flex min-h-screen w-full">
         <Sidebar />
-        <div className="flex flex-1 flex-col">
+        <div className="flex flex-1 flex-col md:pl-14">
           <Header />
           <main className="flex-1">
             <div className="relative h-64 md:h-80 w-full">
