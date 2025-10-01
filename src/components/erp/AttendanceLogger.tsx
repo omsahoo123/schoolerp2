@@ -26,6 +26,9 @@ import { ScrollArea } from "../ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useData } from "@/lib/data-context";
 import { format } from "date-fns";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
 
 type AttendanceLoggerProps = {
   open: boolean;
@@ -38,6 +41,7 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
   const { students: mockStudents, studentAttendance, setStudentAttendance } = useData();
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
+  const [date, setDate] = useState<Date | undefined>(new Date());
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<AttendanceState>({});
   const { toast } = useToast();
@@ -68,7 +72,15 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
   };
 
   const handleSubmit = () => {
-    const today = format(new Date(), 'yyyy-MM-dd');
+    if (!date) {
+        toast({
+            title: "Error",
+            description: "Please select a date.",
+            variant: "destructive",
+        });
+        return;
+    }
+    const selectedDate = format(date, 'yyyy-MM-dd');
     const presentCount = Object.values(attendance).filter(Boolean).length;
     const absentCount = students.length - presentCount;
 
@@ -77,11 +89,11 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
       
       Object.entries(attendance).forEach(([studentId, isPresent]) => {
         const studentIndex = newAttendance.findIndex(sa => sa.studentId === studentId);
-        const newRecord = { date: today, status: isPresent ? 'Present' : 'Absent' };
+        const newRecord = { date: selectedDate, status: isPresent ? 'Present' : 'Absent' as const };
 
         if (studentIndex > -1) {
-          // Check if a record for today already exists and update it
-          const recordIndex = newAttendance[studentIndex].records.findIndex(r => r.date === today);
+          // Check if a record for the selected date already exists and update it
+          const recordIndex = newAttendance[studentIndex].records.findIndex(r => r.date === selectedDate);
           if (recordIndex > -1) {
             newAttendance[studentIndex].records[recordIndex] = newRecord;
           } else {
@@ -97,7 +109,7 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
 
     toast({
       title: "Attendance Submitted",
-      description: `Class ${selectedClass}-${selectedSection}: ${presentCount} present, ${absentCount} absent.`,
+      description: `For ${format(date, "PPP")}, Class ${selectedClass}-${selectedSection}: ${presentCount} present, ${absentCount} absent.`,
     });
     onOpenChange(false);
   };
@@ -107,9 +119,26 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
       <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="font-headline">Log Attendance</DialogTitle>
-          <DialogDescription>Select class and section to mark student attendance for today.</DialogDescription>
+          <DialogDescription>Select date, class and section to mark student attendance.</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4 py-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-4">
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant={"outline"} className={cn("justify-start text-left font-normal", !date && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                    <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        disabled={(d) => d > new Date()}
+                        initialFocus
+                    />
+                </PopoverContent>
+            </Popover>
           <Select onValueChange={handleClassChange} value={selectedClass}>
             <SelectTrigger>
               <SelectValue placeholder="Select Class" />
