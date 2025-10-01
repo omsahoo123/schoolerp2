@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Activity,
   BedDouble,
@@ -19,8 +20,32 @@ import StudentDashboard from "@/components/erp/StudentDashboard";
 import FinanceDashboard from "@/components/erp/FinanceDashboard";
 import Header from "@/components/erp/Header";
 import Sidebar from "@/components/erp/Sidebar";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
+  const [authenticated, setAuthenticated] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    // In a real app, you'd have a proper auth check.
+    // For this prototype, we'll use a session storage item.
+    const isAuthenticated = sessionStorage.getItem("authenticated") === "true";
+    if (!isAuthenticated) {
+      router.push("/login");
+    } else {
+      setAuthenticated(true);
+    }
+  }, [router]);
+
+  if (!authenticated) {
+    // You can show a loader here
+    return (
+        <div className="flex h-screen items-center justify-center">
+            <p>Loading...</p>
+        </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen w-full">
       <Sidebar />
