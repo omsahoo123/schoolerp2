@@ -25,7 +25,6 @@ export default function TeacherDashboard() {
           value="Today's Log"
           description="Mark student attendance"
           onClick={() => setIsAttendanceOpen(true)}
-          className="bg-primary text-primary-foreground hover:bg-primary/90"
         />
         <KpiCard
           title="Total Students"
