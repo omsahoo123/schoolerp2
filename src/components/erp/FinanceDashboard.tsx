@@ -59,7 +59,7 @@ export default function FinanceDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 grid gap-6">
+        <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
                     <CardTitle className="font-headline">Student Fee Details</CardTitle>
@@ -106,12 +106,12 @@ export default function FinanceDashboard() {
                     </ScrollArea>
                 </CardContent>
             </Card>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <AdmissionChart />
-              <HostelChart />
-            </div>
         </div>
-        <FeeStatusChart />
+        <div className="space-y-6">
+            <FeeStatusChart />
+            <AdmissionChart />
+            <HostelChart />
+        </div>
       </div>
     </div>
   );

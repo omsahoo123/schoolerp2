@@ -92,7 +92,7 @@ export default function AdmissionsPage() {
           <div className="absolute inset-0 bg-gradient-to-t from-background to-black/30 flex items-end justify-center pb-8 px-4">
             <div className="text-center">
               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter text-white font-headline">
-                Admissions 2024-2025
+                Admissions 2025-2026
               </h1>
               <p className="mt-2 text-lg md:text-xl text-primary-foreground/90">
                 Join our community of learners and leaders.
