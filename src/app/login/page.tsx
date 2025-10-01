@@ -75,7 +75,7 @@ export default function LoginPage() {
                     <School className="h-8 w-8" />
                 </div>
             </div>
-          <CardTitle className="text-3xl font-bold font-headline">Schiool ERP</CardTitle>
+          <CardTitle className="text-3xl font-bold font-headline">Chool ERP</CardTitle>
           <CardDescription>Enter your credentials to access your dashboard</CardDescription>
         </CardHeader>
         <CardContent>
