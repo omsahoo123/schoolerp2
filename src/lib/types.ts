@@ -47,3 +47,9 @@ export interface Homework {
   dueDate: string;
   assignedBy: string;
 }
+
+export interface Admission {
+    month: string;
+    admitted: number;
+    capacity: number;
+}

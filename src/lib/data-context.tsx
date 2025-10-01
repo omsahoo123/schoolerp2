@@ -7,8 +7,9 @@ import {
   studentAttendance as initialStudentAttendance,
   hostelRooms as initialHostelRooms,
   homeworks as initialHomeworks,
+  admissions as initialAdmissions,
 } from './data';
-import { Student, Fee, StudentAttendance, HostelRoom, Homework } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission } from './types';
 
 interface DataContextProps {
   students: Student[];
@@ -21,6 +22,8 @@ interface DataContextProps {
   setHostelRooms: React.Dispatch<React.SetStateAction<HostelRoom[]>>;
   homeworks: Homework[];
   setHomeworks: React.Dispatch<React.SetStateAction<Homework[]>>;
+  admissions: Admission[];
+  setAdmissions: React.Dispatch<React.SetStateAction<Admission[]>>;
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -31,6 +34,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [studentAttendance, setStudentAttendance] = useState<StudentAttendance[]>(initialStudentAttendance);
   const [hostelRooms, setHostelRooms] = useState<HostelRoom[]>(initialHostelRooms);
   const [homeworks, setHomeworks] = useState<Homework[]>(initialHomeworks);
+  const [admissions, setAdmissions] = useState<Admission[]>(initialAdmissions);
 
   return (
     <DataContext.Provider
@@ -45,6 +49,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setHostelRooms,
         homeworks,
         setHomeworks,
+        admissions,
+        setAdmissions,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -61,4 +61,13 @@ export const homeworks: Homework[] = [
   { id: 'HW01', class: '10', section: 'A', subject: 'Mathematics', title: 'Algebra Chapter 5', description: 'Complete exercises 5.1 and 5.2 from the textbook.', dueDate: '2024-07-15', assignedBy: 'Mr. John Doe' },
   { id: 'HW02', class: '10', section: 'A', subject: 'Physics', title: 'Laws of Motion', description: 'Write a summary of Newton\'s three laws of motion.', dueDate: '2024-07-16', assignedBy: 'Ms. Jane Smith' },
   { id: 'HW03', class: '11', section: 'A', subject: 'Chemistry', title: 'Organic Chemistry Basics', description: 'Read chapter 1 and answer the questions at the end.', dueDate: '2024-07-18', assignedBy: 'Mr. Richard Roe' },
+];
+
+export const admissions: Admission[] = [
+    { month: 'January', admitted: 15, capacity: 20 },
+    { month: 'February', admitted: 18, capacity: 20 },
+    { month: 'March', admitted: 20, capacity: 25 },
+    { month: 'April', admitted: 22, capacity: 25 },
+    { month: 'May', admitted: 19, capacity: 25 },
+    { month: 'June', admitted: 24, capacity: 30 },
 ];

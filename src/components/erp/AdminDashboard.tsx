@@ -8,6 +8,8 @@ import HostelOccupancy from "./HostelOccupancy";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useData } from "@/lib/data-context";
+import AdmissionChart from "./AdmissionChart";
+import HostelChart from "./HostelChart";
 
 export default function AdminDashboard() {
     const { students, fees, hostelRooms } = useData();
@@ -43,16 +45,21 @@ export default function AdminDashboard() {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <FeeStatusChart />
-        <HostelOccupancy />
+        <AdmissionChart />
+        <HostelChart />
       </div>
-       <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground mt-6">
-          <UserPlus className="h-8 w-8 mb-2" />
-          <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
-          <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
-          <Link href="/admissions" legacyBehavior>
-            <Button>Go to Admissions</Button>
-          </Link>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <HostelOccupancy />
+        <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground">
+            <UserPlus className="h-8 w-8 mb-2" />
+            <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
+            <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
+            <Link href="/admissions" legacyBehavior>
+                <Button>Go to Admissions</Button>
+            </Link>
         </Card>
+      </div>
     </div>
   );
 }

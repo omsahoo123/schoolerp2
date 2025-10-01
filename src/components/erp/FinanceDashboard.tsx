@@ -10,6 +10,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import FeeStatusChart from "./FeeStatusChart";
 import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
+import AdmissionChart from "./AdmissionChart";
+import HostelChart from "./HostelChart";
 
 export default function FinanceDashboard() {
   const { fees } = useData();
@@ -57,52 +59,58 @@ export default function FinanceDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="font-headline">Student Fee Details</CardTitle>
-            <CardDescription>Overview of fee status for all students.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[450px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Student Name</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {fees.map((fee) => (
-                    <TableRow key={fee.studentId}>
-                      <TableCell className="font-medium">{fee.studentName}</TableCell>
-                      <TableCell>{fee.class}</TableCell>
-                      <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
-                          {fee.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleGenerateReceipt(fee.studentName)}
-                          disabled={fee.status !== 'Paid'}
-                        >
-                          <Receipt className="h-4 w-4 mr-2" />
-                          Receipt
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+        <div className="lg:col-span-2 grid gap-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-headline">Student Fee Details</CardTitle>
+                    <CardDescription>Overview of fee status for all students.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <ScrollArea className="h-[450px]">
+                    <Table>
+                        <TableHeader>
+                        <TableRow>
+                            <TableHead>Student Name</TableHead>
+                            <TableHead>Class</TableHead>
+                            <TableHead>Amount</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead className="text-right">Action</TableHead>
+                        </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                        {fees.map((fee) => (
+                            <TableRow key={fee.studentId}>
+                            <TableCell className="font-medium">{fee.studentName}</TableCell>
+                            <TableCell>{fee.class}</TableCell>
+                            <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
+                            <TableCell>
+                                <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
+                                {fee.status}
+                                </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleGenerateReceipt(fee.studentName)}
+                                disabled={fee.status !== 'Paid'}
+                                >
+                                <Receipt className="h-4 w-4 mr-2" />
+                                Receipt
+                                </Button>
+                            </TableCell>
+                            </TableRow>
+                        ))}
+                        </TableBody>
+                    </Table>
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <AdmissionChart />
+              <HostelChart />
+            </div>
+        </div>
         <FeeStatusChart />
       </div>
     </div>
