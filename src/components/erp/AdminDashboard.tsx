@@ -72,7 +72,7 @@ export default function AdminDashboard() {
             <UserPlus className="h-8 w-8 mb-2" />
             <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
             <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
-            <Link href="/admissions" legacyBehavior>
+            <Link href="/admissions" passHref>
                 <Button>Go to Admissions</Button>
             </Link>
         </Card>
