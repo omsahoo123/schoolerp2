@@ -17,6 +17,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,6 +26,8 @@ import { useToast } from "@/hooks/use-toast";
 import { School } from "lucide-react";
 import { useData } from "@/lib/data-context";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 const loginFormSchema = z.object({
   username: z.string().min(1, "User ID is required."),
@@ -147,6 +150,20 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
+        <CardFooter className="flex-col items-start gap-4">
+          <Separator />
+          <div className="text-sm text-muted-foreground">
+            <p className="mb-2">New to our school?</p>
+            <div className="flex flex-col gap-2">
+                 <Link href="/admissions" className="font-medium text-primary hover:underline">
+                    New student? Apply for admission
+                 </Link>
+                 <Link href="/careers" className="font-medium text-primary hover:underline">
+                    Looking for a job? Apply here
+                 </Link>
+            </div>
+          </div>
+        </CardFooter>
       </Card>
     </div>
   );
