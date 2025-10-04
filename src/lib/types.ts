@@ -7,6 +7,12 @@ export interface Student {
   avatar: string;
 }
 
+export interface Teacher {
+  id: string;
+  name: string;
+  subject: string;
+}
+
 export type FeeStatus = 'Paid' | 'Due' | 'Overdue';
 
 export interface Fee {

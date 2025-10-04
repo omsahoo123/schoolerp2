@@ -8,13 +8,16 @@ import {
   hostelRooms as initialHostelRooms,
   homeworks as initialHomeworks,
   admissions as initialAdmissions,
-  users as initialUsers
+  users as initialUsers,
+  teachers as initialTeachers
 } from './data';
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher } from './types';
 
 interface DataContextProps {
   students: Student[];
   setStudents: React.Dispatch<React.SetStateAction<Student[]>>;
+  teachers: Teacher[];
+  setTeachers: React.Dispatch<React.SetStateAction<Teacher[]>>;
   fees: Fee[];
   setFees: React.Dispatch<React.SetStateAction<Fee[]>>;
   studentAttendance: StudentAttendance[];
@@ -33,6 +36,7 @@ const DataContext = createContext<DataContextProps | undefined>(undefined);
 
 export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [students, setStudents] = useState<Student[]>(initialStudents);
+  const [teachers, setTeachers] = useState<Teacher[]>(initialTeachers);
   const [fees, setFees] = useState<Fee[]>(initialFees);
   const [studentAttendance, setStudentAttendance] = useState<StudentAttendance[]>(initialStudentAttendance);
   const [hostelRooms, setHostelRooms] = useState<HostelRoom[]>(initialHostelRooms);
@@ -45,6 +49,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       value={{
         students,
         setStudents,
+        teachers,
+        setTeachers,
         fees,
         setFees,
         studentAttendance,

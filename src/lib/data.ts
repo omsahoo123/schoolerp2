@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -9,6 +9,12 @@ export const users: User[] = [
   { id: 'U002', userId: 'teacher', password: 'password', role: 'Teacher' },
   { id: 'U003', userId: 'student', password: 'password', role: 'Student', studentId: 'S004' },
   { id: 'U004', userId: 'finance', password: 'password', role: 'Finance' },
+];
+
+export const teachers: Teacher[] = [
+  { id: 'T001', name: 'Mr. John Doe', subject: 'Mathematics' },
+  { id: 'T002', name: 'Ms. Jane Smith', subject: 'Physics' },
+  { id: 'T003', name: 'Mr. Richard Roe', subject: 'Chemistry' },
 ];
 
 export const students: Student[] = [

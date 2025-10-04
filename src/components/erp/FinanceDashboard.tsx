@@ -109,10 +109,12 @@ export default function FinanceDashboard() {
         </div>
         <div className="space-y-6">
             <FeeStatusChart />
+        </div>
+      </div>
+       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AdmissionChart />
             <HostelChart />
         </div>
-      </div>
     </div>
   );
 }
