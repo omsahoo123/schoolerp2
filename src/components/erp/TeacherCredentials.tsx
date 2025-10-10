@@ -62,6 +62,13 @@ export default function TeacherCredentials({ open, onOpenChange }: TeacherCreden
     navigator.clipboard.writeText(text);
     toast({ title: "Copied!", description: "Credentials copied to clipboard." });
   };
+  
+  const resetAndClose = () => {
+    setSelectedTeacherId('');
+    setGeneratedId('');
+    setGeneratedPassword('');
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,7 +82,7 @@ export default function TeacherCredentials({ open, onOpenChange }: TeacherCreden
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="teacher-select">Select Teacher</Label>
-            <Select onValueChange={setSelectedTeacherId}>
+            <Select onValueChange={setSelectedTeacherId} value={selectedTeacherId}>
               <SelectTrigger id="teacher-select">
                 <SelectValue placeholder="Select a teacher..." />
               </SelectTrigger>
@@ -116,7 +123,7 @@ export default function TeacherCredentials({ open, onOpenChange }: TeacherCreden
           )}
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button variant="outline" onClick={resetAndClose}>Close</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
