@@ -40,7 +40,11 @@ const admissionFormSchema = z.object({
   studentLastName: z.string().min(2, "Last name must be at least 2 characters."),
   dateOfBirth: z.date({
     required_error: "A date of birth is required.",
-  }),
+  }).refine((date) => {
+    const today = new Date();
+    const twoYearsAgo = new Date(today.getFullYear() - 2, today.getMonth(), today.getDate());
+    return date <= twoYearsAgo;
+  }, "Student must be at least 2 years old."),
   gender: z.string({ required_error: "Please select a gender." }),
   applyingForGrade: z.string({ required_error: "Please select a grade." }),
   previousSchool: z.string().optional(),
@@ -167,7 +171,7 @@ export default function AdmissionsPage() {
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus />
+                            <Calendar mode="single" captionLayout="dropdown-buttons" selected={field.value} onSelect={field.onChange} fromYear={1950} toYear={new Date().getFullYear() - 2} disabled={(date) => date > new Date() || date < new Date("1900-01-01")} initialFocus />
                           </PopoverContent>
                         </Popover>
                         <FormMessage />
