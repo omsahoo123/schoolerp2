@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -83,4 +83,9 @@ export const admissions: Admission[] = [
     { month: 'April', admitted: 22, capacity: 25 },
     { month: 'May', admitted: 19, capacity: 25 },
     { month: 'June', admitted: 24, capacity: 30 },
+];
+
+export const admissionApplications: AdmissionApplication[] = [
+    { id: 'APP001', studentName: 'Rohan Mehra', applyingForGrade: '8', parentName: 'Sunil Mehra', parentEmail: 'sunil.mehra@example.com', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd')},
+    { id: 'APP002', studentName: 'Priya Jain', applyingForGrade: '9', parentName: 'Anjali Jain', parentEmail: 'anjali.jain@example.com', status: 'Pending', date: format(subDays(today, 2), 'yyyy-MM-dd')},
 ];

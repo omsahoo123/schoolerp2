@@ -12,6 +12,7 @@ import AdmissionChart from "./AdmissionChart";
 import HostelChart from "./HostelChart";
 import { useState } from "react";
 import TeacherCredentials from "./TeacherCredentials";
+import AdmissionRequests from "./AdmissionRequests";
 
 export default function AdminDashboard() {
     const { students, fees, hostelRooms } = useData();
@@ -54,6 +55,10 @@ export default function AdminDashboard() {
         />
       </div>
 
+      <div className="grid gap-6">
+        <AdmissionRequests />
+      </div>
+
       <div className="grid gap-6 md:grid-cols-3">
         <div className="md:col-span-1">
           <FeeStatusChart />
@@ -72,7 +77,7 @@ export default function AdminDashboard() {
             <UserPlus className="h-8 w-8 mb-2" />
             <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
             <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
-            <Link href="/admissions" passHref>
+            <Link href="/admissions">
                 <Button>Go to Admissions</Button>
             </Link>
         </Card>

@@ -32,6 +32,8 @@ import { useToast } from "@/hooks/use-toast";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
+import { useData } from "@/lib/data-context";
+import { AdmissionApplication } from "@/lib/types";
 
 const admissionFormSchema = z.object({
   studentFirstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -54,6 +56,7 @@ type AdmissionFormValues = z.infer<typeof admissionFormSchema>;
 export default function AdmissionsPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'admission-hero');
+  const { setAdmissionApplications } = useData();
 
   const form = useForm<AdmissionFormValues>({
     resolver: zodResolver(admissionFormSchema),
@@ -68,9 +71,21 @@ export default function AdmissionsPage() {
   });
 
   function onSubmit(data: AdmissionFormValues) {
+    const newApplication: AdmissionApplication = {
+        id: `APP${Date.now()}`,
+        studentName: `${data.studentFirstName} ${data.studentLastName}`,
+        parentName: `${data.parentFirstName} ${data.parentLastName}`,
+        parentEmail: data.parentEmail,
+        applyingForGrade: data.applyingForGrade,
+        status: 'Pending',
+        date: new Date().toISOString().split('T')[0],
+    };
+
+    setAdmissionApplications(prev => [newApplication, ...prev]);
+
     toast({
       title: "Application Submitted!",
-      description: `Thank you, ${data.parentFirstName}. The admission application for ${data.studentFirstName} has been received.`,
+      description: `Thank you, ${data.parentFirstName}. Your application for ${data.studentFirstName} has been received and is pending review.`,
     });
     form.reset();
   }

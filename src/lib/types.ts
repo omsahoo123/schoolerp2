@@ -60,6 +60,17 @@ export interface Admission {
     capacity: number;
 }
 
+export interface AdmissionApplication {
+  id: string;
+  studentName: string;
+  applyingForGrade: string;
+  parentName: string;
+  parentEmail: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  date: string;
+}
+
+
 export interface User {
   id: string;
   userId: string;
