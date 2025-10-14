@@ -1,7 +1,7 @@
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
-import { DollarSign, Receipt, TrendingUp, Users } from "lucide-react";
+import { DollarSign, Edit, Receipt, TrendingUp, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +10,16 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import FeeStatusChart from "./FeeStatusChart";
 import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
-import AdmissionChart from "./AdmissionChart";
 import HostelChart from "./HostelChart";
+import { useState } from "react";
+import { Fee } from "@/lib/types";
+import EditFeeDialog from "./EditFeeDialog";
 
 export default function FinanceDashboard() {
-  const { fees } = useData();
+  const { fees, setFees } = useData();
   const { toast } = useToast();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
 
   const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0);
   const paidFees = fees.filter(f => f.status === 'Paid').reduce((sum, fee) => sum + fee.amount, 0);
@@ -29,7 +33,25 @@ export default function FinanceDashboard() {
     });
   };
 
+  const handleEditClick = (fee: Fee) => {
+    setSelectedFee(fee);
+    setIsEditDialogOpen(true);
+  };
+  
+  const handleFeeUpdate = (studentId: string, newAmount: number) => {
+    setFees(prevFees =>
+        prevFees.map(fee =>
+            fee.studentId === studentId ? { ...fee, amount: newAmount } : fee
+        )
+    );
+    toast({
+        title: "Fee Updated",
+        description: "The student's fee amount has been successfully updated."
+    })
+  };
+
   return (
+    <>
     <div className="space-y-6">
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <KpiCard
@@ -74,7 +96,7 @@ export default function FinanceDashboard() {
                             <TableHead>Class</TableHead>
                             <TableHead>Amount</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Action</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -88,15 +110,22 @@ export default function FinanceDashboard() {
                                 {fee.status}
                                 </Badge>
                             </TableCell>
-                            <TableCell className="text-right">
+                            <TableCell className="text-right space-x-2">
                                 <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleGenerateReceipt(fee.studentName)}
-                                disabled={fee.status !== 'Paid'}
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleEditClick(fee)}
+                                  disabled={fee.status === 'Paid'}
                                 >
-                                <Receipt className="h-4 w-4 mr-2" />
-                                Receipt
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => handleGenerateReceipt(fee.studentName)}
+                                  disabled={fee.status !== 'Paid'}
+                                >
+                                  <Receipt className="h-4 w-4" />
                                 </Button>
                             </TableCell>
                             </TableRow>
@@ -112,9 +141,17 @@ export default function FinanceDashboard() {
         </div>
       </div>
        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <AdmissionChart />
             <HostelChart />
         </div>
     </div>
+    {selectedFee && (
+        <EditFeeDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            fee={selectedFee}
+            onSave={handleFeeUpdate}
+        />
+    )}
+    </>
   );
 }
