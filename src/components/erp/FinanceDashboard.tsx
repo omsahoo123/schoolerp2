@@ -12,7 +12,6 @@ import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
 import AdmissionChart from "./AdmissionChart";
 import HostelChart from "./HostelChart";
-import AdmissionRequests from "./AdmissionRequests";
 
 export default function FinanceDashboard() {
   const { fees } = useData();
@@ -57,10 +56,6 @@ export default function FinanceDashboard() {
           value={fees.filter(f => f.status === 'Overdue').length.toString()}
           description="Students with overdue fees"
         />
-      </div>
-
-       <div className="grid gap-6">
-        <AdmissionRequests />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
