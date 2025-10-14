@@ -8,7 +8,7 @@ import { useData } from "@/lib/data-context";
 import FeePayment from "./FeePayment";
 
 export default function StudentDashboard() {
-  const { students, studentAttendance } = useData();
+  const { students, studentAttendance, fees, hostelFees } = useData();
   const studentId = sessionStorage.getItem("studentId");
   
   const loggedInStudent = students.find(s => s.id === studentId); 
@@ -22,6 +22,9 @@ export default function StudentDashboard() {
   const totalAbsent = attendanceData?.records.filter(r => r.status === 'Absent').length || 0;
   const totalWorkingDays = totalPresent + totalAbsent;
   const attendancePercentage = totalWorkingDays > 0 ? (totalPresent / totalWorkingDays) * 100 : 100;
+
+  const tuitionFee = fees.find(fee => fee.studentId === loggedInStudent.id);
+  const hostelFee = hostelFees.find(fee => fee.studentId === loggedInStudent.id);
 
   return (
     <div className="space-y-6">
@@ -59,7 +62,8 @@ export default function StudentDashboard() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          <FeePayment studentId={loggedInStudent.id} />
+          {tuitionFee && <FeePayment fee={tuitionFee} feeType="tuition" title="Tuition Fee Status" />}
+          {hostelFee && <FeePayment fee={hostelFee} feeType="hostel" title="Hostel Fee Status" />}
           <Homework studentClass={loggedInStudent.class} studentSection={loggedInStudent.section} />
         </div>
         <div className="lg:col-span-1">

@@ -41,10 +41,11 @@ export default function PayPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { setFees } = useData();
+  const { setFees, setHostelFees } = useData();
 
   const studentId = searchParams.get("studentId");
   const amount = searchParams.get("amount");
+  const feeType = searchParams.get("feeType");
 
   const form = useForm<PaymentFormValues>({
     resolver: zodResolver(paymentFormSchema),
@@ -57,16 +58,25 @@ export default function PayPage() {
   });
 
   function onSubmit(data: PaymentFormValues) {
-    if (!studentId) {
-        toast({ title: "Error", description: "Student ID not found.", variant: "destructive"});
+    if (!studentId || !feeType) {
+        toast({ title: "Error", description: "Payment information incomplete.", variant: "destructive"});
         return;
     }
 
-    setFees(prevFees =>
-        prevFees.map(fee =>
-            fee.studentId === studentId ? { ...fee, status: "Paid" } : fee
-        )
-    );
+    if(feeType === 'tuition') {
+        setFees(prevFees =>
+            prevFees.map(fee =>
+                fee.studentId === studentId ? { ...fee, status: "Paid" } : fee
+            )
+        );
+    } else if (feeType === 'hostel') {
+        setHostelFees(prevFees =>
+            prevFees.map(fee =>
+                fee.studentId === studentId ? { ...fee, status: "Paid" } : fee
+            )
+        );
+    }
+
 
     toast({
         title: "Payment Successful!",
@@ -75,7 +85,7 @@ export default function PayPage() {
     router.push("/");
   }
 
-  if (!studentId || !amount) {
+  if (!studentId || !amount || !feeType) {
     return (
         <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background p-4">
              <Card className="w-full max-w-sm">

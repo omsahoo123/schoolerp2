@@ -1,6 +1,5 @@
 "use client";
 
-import { useData } from "@/lib/data-context";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
@@ -8,35 +7,36 @@ import { CreditCard, Receipt } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { Fee, HostelFee } from "@/lib/types";
 
 type FeePaymentProps = {
-    studentId: string;
+    fee: Fee | HostelFee;
+    feeType: 'tuition' | 'hostel';
+    title: string;
 };
 
-export default function FeePayment({ studentId }: FeePaymentProps) {
-    const { fees } = useData();
+export default function FeePayment({ fee, feeType, title }: FeePaymentProps) {
     const router = useRouter();
     const { toast } = useToast();
-    const studentFee = fees.find(fee => fee.studentId === studentId);
-
+    
     const handlePayment = () => {
-        if (studentFee) {
-            router.push(`/pay?studentId=${studentFee.studentId}&amount=${studentFee.amount}`);
+        if (fee) {
+            router.push(`/pay?studentId=${fee.studentId}&amount=${fee.amount}&feeType=${feeType}`);
         }
     };
     
     const handleGenerateReceipt = () => {
         toast({
             title: "Receipt Generated",
-            description: `Fee receipt for ${studentFee?.studentName} has been downloaded.`,
+            description: `Fee receipt for ${fee?.studentName} has been downloaded.`,
         });
     }
 
-    if (!studentFee) {
+    if (!fee) {
         return (
              <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline flex items-center gap-2"><CreditCard /> Fee Status</CardTitle>
+                    <CardTitle className="font-headline flex items-center gap-2"><CreditCard /> {title}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">No fee information available at this time.</p>
@@ -45,26 +45,26 @@ export default function FeePayment({ studentId }: FeePaymentProps) {
         )
     }
 
-    const isPaymentDue = studentFee.status === 'Due' || studentFee.status === 'Overdue';
+    const isPaymentDue = fee.status === 'Due' || fee.status === 'Overdue';
 
     return (
         <Card>
             <CardHeader>
-                <CardTitle className="font-headline flex items-center gap-2"><CreditCard /> Fee Status</CardTitle>
+                <CardTitle className="font-headline flex items-center gap-2"><CreditCard /> {title}</CardTitle>
                 <CardDescription>View your current fee status and make payments.</CardDescription>
             </CardHeader>
             <CardContent>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border rounded-lg bg-background">
                     <div className="mb-4 sm:mb-0">
                         <p className="text-sm text-muted-foreground">Total Amount</p>
-                        <p className="text-2xl font-bold font-headline">₹{studentFee.amount.toLocaleString()}</p>
+                        <p className="text-2xl font-bold font-headline">₹{fee.amount.toLocaleString()}</p>
                         <p className="text-sm text-muted-foreground">
-                            Due Date: {format(new Date(studentFee.dueDate), "MMM dd, yyyy")}
+                            Due Date: {format(new Date(fee.dueDate), "MMM dd, yyyy")}
                         </p>
                     </div>
                     <div className="flex flex-col items-start sm:items-end gap-2">
-                        <Badge variant={studentFee.status === 'Paid' ? 'success' : studentFee.status === 'Due' ? 'warning' : 'destructive'}>
-                            Status: {studentFee.status}
+                        <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
+                            Status: {fee.status}
                         </Badge>
                         {isPaymentDue ? (
                             <Button onClick={handlePayment}>
