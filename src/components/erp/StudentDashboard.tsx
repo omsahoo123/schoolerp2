@@ -5,6 +5,7 @@ import KpiCard from "./KpiCard";
 import AttendanceView from "./AttendanceView";
 import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
+import FeePayment from "./FeePayment";
 
 export default function StudentDashboard() {
   const { students, studentAttendance } = useData();
@@ -57,7 +58,8 @@ export default function StudentDashboard() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
+          <FeePayment studentId={loggedInStudent.id} />
           <Homework studentClass={loggedInStudent.class} studentSection={loggedInStudent.section} />
         </div>
         <div className="lg:col-span-1">
