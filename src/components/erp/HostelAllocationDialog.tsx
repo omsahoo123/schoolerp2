@@ -40,32 +40,33 @@ const hostelTypes = {
 };
 
 export default function HostelAllocationDialog({ open, onOpenChange, application, onAllocationSuccess }: HostelAllocationDialogProps) {
-  const { hostelRooms, setHostelRooms, setStudents, setFees } = useData();
+  const { hostelRooms, setHostelRooms, setStudents, setFees, students: allStudents } = useData();
   const { toast } = useToast();
 
   const [selectedHostelType, setSelectedHostelType] = useState<'Boys' | 'Girls' | ''>('');
   const [selectedHostel, setSelectedHostel] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
 
-  // Effect to initialize hostel type based on application gender
+  // Effect to initialize hostel type based on application gender and reset on close
   useEffect(() => {
-    if (open && application?.gender) {
-        const gender = application.gender.toLowerCase();
-        if (gender === 'male') {
-            setSelectedHostelType('Boys');
-        } else if (gender === 'female') {
-            setSelectedHostelType('Girls');
-        } else {
-            setSelectedHostelType('');
-        }
+    if (open && application) {
+      if (application.gender?.toLowerCase() === 'male') {
+        setSelectedHostelType('Boys');
+      } else if (application.gender?.toLowerCase() === 'female') {
+        setSelectedHostelType('Girls');
+      }
     } else if (!open) {
-        // Reset state when dialog closes
-        setSelectedHostelType('');
-        setSelectedHostel('');
-        setSelectedRoom('');
+      setSelectedHostelType('');
+      setSelectedHostel('');
+      setSelectedRoom('');
     }
   }, [application, open]);
 
+  const handleHostelTypeChange = (value: 'Boys' | 'Girls' | '') => {
+    setSelectedHostelType(value);
+    setSelectedHostel('');
+    setSelectedRoom('');
+  }
 
   const availableHostels = useMemo(() => {
     if (!selectedHostelType) return [];
@@ -87,11 +88,8 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
       return;
     }
 
-    // 1. Check if student already exists. If not, create them.
-    // This logic assumes the student might have been created by the simple approve button.
-    // A more robust system would use unique IDs.
     let studentId = '';
-    const existingStudent = useData().students.find(s => s.name === application.studentName);
+    const existingStudent = allStudents.find(s => s.name === application.studentName);
 
     if (!existingStudent) {
         const newStudent: Student = {
@@ -105,12 +103,11 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         setStudents(prev => [...prev, newStudent]);
         studentId = newStudent.id;
 
-        // Create fee record since they are being created here
         const newFee: Fee = {
             studentId: newStudent.id,
             studentName: newStudent.name,
             class: `${newStudent.class}${newStudent.section}`,
-            amount: 5500, // Default fee amount
+            amount: 5500,
             status: 'Due',
             dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
         };
@@ -119,8 +116,6 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         studentId = existingStudent.id;
     }
 
-
-    // 2. Update hostel room
     setHostelRooms(prevRooms =>
       prevRooms.map(room =>
         room.roomNumber === selectedRoom
@@ -156,7 +151,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         <div className="space-y-4 py-4">
           <div className="space-y-2">
             <Label>Hostel Type</Label>
-            <RadioGroup value={selectedHostelType} onValueChange={(value) => setSelectedHostelType(value as 'Boys' | 'Girls')}>
+            <RadioGroup value={selectedHostelType} onValueChange={(value) => handleHostelTypeChange(value as 'Boys' | 'Girls')}>
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="Boys" id="boys" disabled={applicantGender !== 'male'} />
                 <Label htmlFor="boys">Boys Hostel</Label>
