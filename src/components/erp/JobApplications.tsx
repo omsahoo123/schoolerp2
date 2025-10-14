@@ -6,12 +6,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
 import { JobApplication, Teacher } from "@/lib/types";
-import { Check, X } from "lucide-react";
+import { Check, Eye, X } from "lucide-react";
 import { Badge } from "../ui/badge";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
+import { ScrollArea } from "../ui/scroll-area";
 
 export default function JobApplications() {
     const { jobApplications, setJobApplications, setTeachers } = useData();
     const { toast } = useToast();
+    const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
+    const [isResumeOpen, setIsResumeOpen] = useState(false);
 
     const handleAccept = (application: JobApplication) => {
         // Create new teacher
@@ -44,9 +49,15 @@ export default function JobApplications() {
         });
     }
 
+    const handleViewResume = (application: JobApplication) => {
+        setSelectedApplication(application);
+        setIsResumeOpen(true);
+    }
+
     const displayedApplications = jobApplications.filter(app => app.status === 'Pending');
 
     return (
+        <>
         <Card>
             <CardHeader>
                 <CardTitle className="font-headline">Pending Job Applications</CardTitle>
@@ -59,7 +70,7 @@ export default function JobApplications() {
                             <TableHead>Applicant Name</TableHead>
                             <TableHead>Subject</TableHead>
                             <TableHead>Experience</TableHead>
-                            <TableHead>Date</TableHead>
+                            <TableHead>Resume/Profile</TableHead>
                              <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -71,7 +82,11 @@ export default function JobApplications() {
                                 <TableCell className="font-medium">{app.fullName}</TableCell>
                                 <TableCell className="capitalize">{app.subject}</TableCell>
                                 <TableCell>{app.experience} years</TableCell>
-                                <TableCell>{app.date}</TableCell>
+                                <TableCell>
+                                    <Button variant="outline" size="sm" onClick={() => handleViewResume(app)}>
+                                        <Eye className="mr-2 h-4 w-4" /> View
+                                    </Button>
+                                </TableCell>
                                 <TableCell>
                                     <Badge variant={app.status === 'Pending' ? 'warning' : app.status === 'Accepted' ? 'success' : 'destructive'}>
                                         {app.status}
@@ -100,5 +115,22 @@ export default function JobApplications() {
                 </Table>
             </CardContent>
         </Card>
+         <Dialog open={isResumeOpen} onOpenChange={setIsResumeOpen}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="font-headline">Resume: {selectedApplication?.fullName}</DialogTitle>
+                        <DialogDescription>
+                            Subject: {selectedApplication?.subject} | Experience: {selectedApplication?.experience} years
+                        </DialogDescription>
+                    </DialogHeader>
+                    <ScrollArea className="h-96 w-full rounded-md border p-4 my-4">
+                        <pre className="whitespace-pre-wrap text-sm">{selectedApplication?.resume}</pre>
+                    </ScrollArea>
+                    <DialogFooter>
+                        <Button onClick={() => setIsResumeOpen(false)}>Close</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

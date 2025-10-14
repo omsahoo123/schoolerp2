@@ -98,6 +98,6 @@ export const admissionApplications: AdmissionApplication[] = [
 ];
 
 export const jobApplications: JobApplication[] = [
-    { id: 'JOB001', fullName: 'Sanjay Gupta', email: 'sanjay.g@example.com', phone: '9876543210', subject: 'Mathematics', experience: 5, status: 'Pending', date: format(subDays(today, 3), 'yyyy-MM-dd') },
-    { id: 'JOB002', fullName: 'Meera Devi', email: 'meera.d@example.com', phone: '8765432109', subject: 'Physics', experience: 8, status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd') },
+    { id: 'JOB001', fullName: 'Sanjay Gupta', email: 'sanjay.g@example.com', phone: '9876543210', subject: 'Mathematics', experience: 5, resume: 'https://www.linkedin.com/in/sanjaygupta', status: 'Pending', date: format(subDays(today, 3), 'yyyy-MM-dd') },
+    { id: 'JOB002', fullName: 'Meera Devi', email: 'meera.d@example.com', phone: '8765432109', subject: 'Physics', experience: 8, resume: 'Experienced Physics teacher with a passion for modern teaching methods. Proven track record of improving student grades. References available upon request.', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd') },
 ];

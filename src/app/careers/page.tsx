@@ -72,6 +72,7 @@ export default function CareersPage() {
         phone: data.phone,
         subject: data.subject,
         experience: data.experience,
+        resume: data.resume,
         status: 'Pending',
         date: new Date().toISOString().split('T')[0],
     };

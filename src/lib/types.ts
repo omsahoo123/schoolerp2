@@ -87,6 +87,7 @@ export interface JobApplication {
   phone: string;
   subject: string;
   experience: number;
+  resume: string;
   status: 'Pending' | 'Accepted' | 'Rejected';
   date: string;
 }
