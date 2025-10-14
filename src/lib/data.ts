@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -34,6 +34,13 @@ export const fees: Fee[] = [
   { studentId: 'S004', studentName: 'Myra Kumar', class: '11A', amount: 6000, status: 'Paid', dueDate: '2024-07-10' },
   { studentId: 'S005', studentName: 'Advik Reddy', class: '11A', amount: 6000, status: 'Due', dueDate: '2024-07-10' },
   { studentId: 'S006', studentName: 'Ishaan Gupta', class: '12C', amount: 7000, status: 'Paid', dueDate: '2024-07-10' },
+];
+
+export const hostelFees: HostelFee[] = [
+    { studentId: 'S001', studentName: 'Aarav Sharma', roomNumber: '101', amount: 2500, status: 'Paid', dueDate: '2024-07-10' },
+    { studentId: 'S003', studentName: 'Vivaan Singh', roomNumber: '101', amount: 2500, status: 'Due', dueDate: '2024-07-10' },
+    { studentId: 'S004', studentName: 'Myra Kumar', roomNumber: '201', amount: 3000, status: 'Overdue', dueDate: '2024-06-10' },
+    { studentId: 'S005', studentName: 'Advik Reddy', roomNumber: '201', amount: 3000, status: 'Paid', dueDate: '2024-07-10' },
 ];
 
 const today = new Date();
@@ -86,6 +93,6 @@ export const admissions: Admission[] = [
 ];
 
 export const admissionApplications: AdmissionApplication[] = [
-    { id: 'APP001', studentName: 'Rohan Mehra', applyingForGrade: '8', parentName: 'Sunil Mehra', parentEmail: 'sunil.mehra@example.com', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd')},
-    { id: 'APP002', studentName: 'Priya Jain', applyingForGrade: '9', parentName: 'Anjali Jain', parentEmail: 'anjali.jain@example.com', status: 'Pending', date: format(subDays(today, 2), 'yyyy-MM-dd')},
+    { id: 'APP001', studentName: 'Rohan Mehra', applyingForGrade: '8', parentName: 'Sunil Mehra', parentEmail: 'sunil.mehra@example.com', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd'), gender: 'male'},
+    { id: 'APP002', studentName: 'Priya Jain', applyingForGrade: '9', parentName: 'Anjali Jain', parentEmail: 'anjali.jain@example.com', status: 'Pending', date: format(subDays(today, 2), 'yyyy-MM-dd'), gender: 'female'},
 ];

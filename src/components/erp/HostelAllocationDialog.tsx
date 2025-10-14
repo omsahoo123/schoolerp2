@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
-import { AdmissionApplication, Fee, Student } from "@/lib/types";
+import { AdmissionApplication, Fee, Student, HostelFee } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { addDays, format } from "date-fns";
@@ -40,28 +40,29 @@ const hostelTypes = {
 };
 
 export default function HostelAllocationDialog({ open, onOpenChange, application, onAllocationSuccess }: HostelAllocationDialogProps) {
-  const { hostelRooms, setHostelRooms, setStudents, setFees, students: allStudents } = useData();
+  const { hostelRooms, setHostelRooms, setStudents, setFees, students: allStudents, setHostelFees } = useData();
   const { toast } = useToast();
 
   const [selectedHostelType, setSelectedHostelType] = useState<'Boys' | 'Girls' | ''>('');
   const [selectedHostel, setSelectedHostel] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
 
-  // Effect to initialize hostel type based on application gender and reset on close
+  // Effect to initialize hostel type based on application gender and reset on close/application change
   useEffect(() => {
     if (open && application) {
       if (application.gender?.toLowerCase() === 'male') {
         setSelectedHostelType('Boys');
       } else if (application.gender?.toLowerCase() === 'female') {
         setSelectedHostelType('Girls');
+      } else {
+        setSelectedHostelType('');
       }
-    } else if (!open) {
-      setSelectedHostelType('');
+      // Reset selections when dialog opens for a new application
       setSelectedHostel('');
       setSelectedRoom('');
     }
   }, [application, open]);
-
+  
   const handleHostelTypeChange = (value: 'Boys' | 'Girls' | '') => {
     setSelectedHostelType(value);
     setSelectedHostel('');
@@ -80,7 +81,6 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
       .filter(room => room.occupants.length < room.capacity)
       .map(room => room.roomNumber);
   }, [selectedHostel, hostelRooms]);
-  
 
   const handleAllocate = () => {
     if (!application || !selectedHostel || !selectedRoom) {
@@ -123,6 +123,17 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
           : room
       )
     );
+
+    // Create a new hostel fee record
+    const newHostelFee: HostelFee = {
+        studentId: studentId,
+        studentName: application.studentName,
+        roomNumber: selectedRoom,
+        amount: 2500, // Default hostel fee amount
+        status: 'Due',
+        dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+    };
+    setHostelFees(prev => [...prev, newHostelFee]);
 
     toast({
       title: "Hostel Allocated!",

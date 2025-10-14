@@ -11,9 +11,10 @@ import {
   admissions as initialAdmissions,
   admissionApplications as initialAdmissionApplications,
   users as initialUsers,
-  teachers as initialTeachers
+  teachers as initialTeachers,
+  hostelFees as initialHostelFees
 } from './data';
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee } from './types';
 
 // Helper function to get data from localStorage or use initial data
 const getInitialState = <T>(key: string, initialData: T): T => {
@@ -37,6 +38,8 @@ interface DataContextProps {
   setTeachers: React.Dispatch<React.SetStateAction<Teacher[]>>;
   fees: Fee[];
   setFees: React.Dispatch<React.SetStateAction<Fee[]>>;
+  hostelFees: HostelFee[];
+  setHostelFees: React.Dispatch<React.SetStateAction<HostelFee[]>>;
   studentAttendance: StudentAttendance[];
   setStudentAttendance: React.Dispatch<React.SetStateAction<StudentAttendance[]>>;
   hostelRooms: HostelRoom[];
@@ -57,6 +60,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [students, setStudents] = useState<Student[]>(() => getInitialState('students', initialStudents));
   const [teachers, setTeachers] = useState<Teacher[]>(() => getInitialState('teachers', initialTeachers));
   const [fees, setFees] = useState<Fee[]>(() => getInitialState('fees', initialFees));
+  const [hostelFees, setHostelFees] = useState<HostelFee[]>(() => getInitialState('hostelFees', initialHostelFees));
   const [studentAttendance, setStudentAttendance] = useState<StudentAttendance[]>(() => getInitialState('studentAttendance', initialStudentAttendance));
   const [hostelRooms, setHostelRooms] = useState<HostelRoom[]>(() => getInitialState('hostelRooms', initialHostelRooms));
   const [homeworks, setHomeworks] = useState<Homework[]>(() => getInitialState('homeworks', initialHomeworks));
@@ -70,6 +74,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       window.localStorage.setItem('students', JSON.stringify(students));
       window.localStorage.setItem('teachers', JSON.stringify(teachers));
       window.localStorage.setItem('fees', JSON.stringify(fees));
+      window.localStorage.setItem('hostelFees', JSON.stringify(hostelFees));
       window.localStorage.setItem('studentAttendance', JSON.stringify(studentAttendance));
       window.localStorage.setItem('hostelRooms', JSON.stringify(hostelRooms));
       window.localStorage.setItem('homeworks', JSON.stringify(homeworks));
@@ -79,7 +84,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Failed to save state to localStorage:", error);
     }
-  }, [students, teachers, fees, studentAttendance, hostelRooms, homeworks, admissions, admissionApplications, users]);
+  }, [students, teachers, fees, hostelFees, studentAttendance, hostelRooms, homeworks, admissions, admissionApplications, users]);
 
 
   return (
@@ -91,6 +96,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setTeachers,
         fees,
         setFees,
+        hostelFees,
+        setHostelFees,
         studentAttendance,
         setStudentAttendance,
         hostelRooms,

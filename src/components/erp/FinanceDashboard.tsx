@@ -12,11 +12,12 @@ import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
 import HostelChart from "./HostelChart";
 import { useState } from "react";
-import { Fee } from "@/lib/types";
+import { Fee, HostelFee } from "@/lib/types";
 import EditFeeDialog from "./EditFeeDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export default function FinanceDashboard() {
-  const { fees, setFees } = useData();
+  const { fees, setFees, hostelFees, setHostelFees } = useData();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
@@ -84,55 +85,110 @@ export default function FinanceDashboard() {
         <div className="lg:col-span-2">
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-headline">Student Fee Details</CardTitle>
-                    <CardDescription>Overview of fee status for all students.</CardDescription>
+                    <CardTitle className="font-headline">Fee Management</CardTitle>
+                    <CardDescription>Overview of tuition and hostel fees for all students.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <ScrollArea className="h-[450px]">
-                    <Table>
-                        <TableHeader>
-                        <TableRow>
-                            <TableHead>Student Name</TableHead>
-                            <TableHead>Class</TableHead>
-                            <TableHead>Amount</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                        {fees.map((fee) => (
-                            <TableRow key={fee.studentId}>
-                            <TableCell className="font-medium">{fee.studentName}</TableCell>
-                            <TableCell>{fee.class}</TableCell>
-                            <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
-                            <TableCell>
-                                <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
-                                {fee.status}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="text-right space-x-2">
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEditClick(fee)}
-                                  disabled={fee.status === 'Paid'}
-                                >
-                                  <Edit className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleGenerateReceipt(fee.studentName)}
-                                  disabled={fee.status !== 'Paid'}
-                                >
-                                  <Receipt className="h-4 w-4" />
-                                </Button>
-                            </TableCell>
-                            </TableRow>
-                        ))}
-                        </TableBody>
-                    </Table>
-                    </ScrollArea>
+                    <Tabs defaultValue="tuition">
+                        <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="tuition">Tuition Fees</TabsTrigger>
+                            <TabsTrigger value="hostel">Hostel Fees</TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="tuition">
+                            <ScrollArea className="h-[450px] mt-4">
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>Student Name</TableHead>
+                                    <TableHead>Class</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {fees.map((fee) => (
+                                    <TableRow key={fee.studentId}>
+                                    <TableCell className="font-medium">{fee.studentName}</TableCell>
+                                    <TableCell>{fee.class}</TableCell>
+                                    <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
+                                        {fee.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handleEditClick(fee)}
+                                          disabled={fee.status === 'Paid'}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handleGenerateReceipt(fee.studentName)}
+                                          disabled={fee.status !== 'Paid'}
+                                        >
+                                          <Receipt className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            </ScrollArea>
+                        </TabsContent>
+                        <TabsContent value="hostel">
+                             <ScrollArea className="h-[450px] mt-4">
+                            <Table>
+                                <TableHeader>
+                                <TableRow>
+                                    <TableHead>Student Name</TableHead>
+                                    <TableHead>Room No.</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                {hostelFees.map((fee) => (
+                                    <TableRow key={fee.studentId}>
+                                    <TableCell className="font-medium">{fee.studentName}</TableCell>
+                                    <TableCell>{fee.roomNumber}</TableCell>
+                                    <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={fee.status === 'Paid' ? 'success' : fee.status === 'Due' ? 'warning' : 'destructive'}>
+                                        {fee.status}
+                                        </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-right space-x-2">
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          // onClick={() => handleEditClick(fee)} // TODO: Implement edit for hostel fee
+                                          disabled={fee.status === 'Paid'}
+                                        >
+                                          <Edit className="h-4 w-4" />
+                                        </Button>
+                                        <Button
+                                          variant="ghost"
+                                          size="icon"
+                                          onClick={() => handleGenerateReceipt(fee.studentName)}
+                                          disabled={fee.status !== 'Paid'}
+                                        >
+                                          <Receipt className="h-4 w-4" />
+                                        </Button>
+                                    </TableCell>
+                                    </TableRow>
+                                ))}
+                                </TableBody>
+                            </Table>
+                            </ScrollArea>
+                        </TabsContent>
+                    </Tabs>
                 </CardContent>
             </Card>
         </div>

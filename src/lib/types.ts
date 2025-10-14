@@ -24,6 +24,15 @@ export interface Fee {
   dueDate: string;
 }
 
+export interface HostelFee {
+  studentId: string;
+  studentName: string;
+  roomNumber: string;
+  amount: number;
+  status: FeeStatus;
+  dueDate: string;
+}
+
 export type AttendanceStatus = 'Present' | 'Absent' | 'Holiday';
 
 export interface AttendanceRecord {
@@ -68,6 +77,7 @@ export interface AdmissionApplication {
   parentEmail: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   date: string;
+  gender: string;
 }
 
 
