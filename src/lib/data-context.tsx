@@ -12,9 +12,10 @@ import {
   admissionApplications as initialAdmissionApplications,
   users as initialUsers,
   teachers as initialTeachers,
-  hostelFees as initialHostelFees
+  hostelFees as initialHostelFees,
+  jobApplications as initialJobApplications
 } from './data';
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication } from './types';
 
 // Helper function to get data from localStorage or use initial data
 const getInitialState = <T>(key: string, initialData: T): T => {
@@ -50,6 +51,8 @@ interface DataContextProps {
   setAdmissions: React.Dispatch<React.SetStateAction<Admission[]>>;
   admissionApplications: AdmissionApplication[];
   setAdmissionApplications: React.Dispatch<React.SetStateAction<AdmissionApplication[]>>;
+  jobApplications: JobApplication[];
+  setJobApplications: React.Dispatch<React.SetStateAction<JobApplication[]>>;
   users: User[];
   setUsers: React.Dispatch<React.SetStateAction<User[]>>;
 }
@@ -66,6 +69,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const [homeworks, setHomeworks] = useState<Homework[]>(() => getInitialState('homeworks', initialHomeworks));
   const [admissions, setAdmissions] = useState<Admission[]>(() => getInitialState('admissions', initialAdmissions));
   const [admissionApplications, setAdmissionApplications] = useState<AdmissionApplication[]>(() => getInitialState('admissionApplications', initialAdmissionApplications));
+  const [jobApplications, setJobApplications] = useState<JobApplication[]>(() => getInitialState('jobApplications', initialJobApplications));
   const [users, setUsers] = useState<User[]>(() => getInitialState('users', initialUsers));
 
   // Effect to save state to localStorage whenever it changes
@@ -80,11 +84,12 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
       window.localStorage.setItem('homeworks', JSON.stringify(homeworks));
       window.localStorage.setItem('admissions', JSON.stringify(admissions));
       window.localStorage.setItem('admissionApplications', JSON.stringify(admissionApplications));
+      window.localStorage.setItem('jobApplications', JSON.stringify(jobApplications));
       window.localStorage.setItem('users', JSON.stringify(users));
     } catch (error) {
       console.error("Failed to save state to localStorage:", error);
     }
-  }, [students, teachers, fees, hostelFees, studentAttendance, hostelRooms, homeworks, admissions, admissionApplications, users]);
+  }, [students, teachers, fees, hostelFees, studentAttendance, hostelRooms, homeworks, admissions, admissionApplications, jobApplications, users]);
 
 
   return (
@@ -108,6 +113,8 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
         setAdmissions,
         admissionApplications,
         setAdmissionApplications,
+        jobApplications,
+        setJobApplications,
         users,
         setUsers,
       }}

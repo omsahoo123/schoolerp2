@@ -1,4 +1,4 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
@@ -95,4 +95,9 @@ export const admissions: Admission[] = [
 export const admissionApplications: AdmissionApplication[] = [
     { id: 'APP001', studentName: 'Rohan Mehra', applyingForGrade: '8', parentName: 'Sunil Mehra', parentEmail: 'sunil.mehra@example.com', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd'), gender: 'male'},
     { id: 'APP002', studentName: 'Priya Jain', applyingForGrade: '9', parentName: 'Anjali Jain', parentEmail: 'anjali.jain@example.com', status: 'Pending', date: format(subDays(today, 2), 'yyyy-MM-dd'), gender: 'female'},
+];
+
+export const jobApplications: JobApplication[] = [
+    { id: 'JOB001', fullName: 'Sanjay Gupta', email: 'sanjay.g@example.com', phone: '9876543210', subject: 'Mathematics', experience: 5, status: 'Pending', date: format(subDays(today, 3), 'yyyy-MM-dd') },
+    { id: 'JOB002', fullName: 'Meera Devi', email: 'meera.d@example.com', phone: '8765432109', subject: 'Physics', experience: 8, status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd') },
 ];

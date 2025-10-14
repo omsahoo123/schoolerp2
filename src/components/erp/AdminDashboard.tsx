@@ -13,6 +13,7 @@ import HostelChart from "./HostelChart";
 import { useState } from "react";
 import TeacherCredentials from "./TeacherCredentials";
 import AdmissionRequests from "./AdmissionRequests";
+import JobApplications from "./JobApplications";
 
 export default function AdminDashboard() {
     const { students, fees, hostelRooms } = useData();
@@ -57,6 +58,10 @@ export default function AdminDashboard() {
 
       <div className="grid gap-6">
         <AdmissionRequests />
+      </div>
+
+       <div className="grid gap-6">
+        <JobApplications />
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">

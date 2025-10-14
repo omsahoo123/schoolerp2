@@ -80,6 +80,17 @@ export interface AdmissionApplication {
   gender: string;
 }
 
+export interface JobApplication {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string;
+  subject: string;
+  experience: number;
+  status: 'Pending' | 'Accepted' | 'Rejected';
+  date: string;
+}
+
 
 export interface User {
   id: string;

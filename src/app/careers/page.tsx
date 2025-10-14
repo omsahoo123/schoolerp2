@@ -29,6 +29,8 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
+import { useData } from "@/lib/data-context";
+import { JobApplication } from "@/lib/types";
 
 const jobApplicationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -48,6 +50,7 @@ export default function CareersPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'careers-hero');
   const router = useRouter();
+  const { setJobApplications } = useData();
 
   const form = useForm<JobApplicationValues>({
     resolver: zodResolver(jobApplicationSchema),
@@ -62,6 +65,19 @@ export default function CareersPage() {
   });
 
   function onSubmit(data: JobApplicationValues) {
+    const newApplication: JobApplication = {
+        id: `JOB${Date.now()}`,
+        fullName: data.fullName,
+        email: data.email,
+        phone: data.phone,
+        subject: data.subject,
+        experience: data.experience,
+        status: 'Pending',
+        date: new Date().toISOString().split('T')[0],
+    };
+
+    setJobApplications(prev => [newApplication, ...prev]);
+
     toast({
       title: "Application Submitted!",
       description: `Thank you for your interest, ${data.fullName}. We have received your application.`,
