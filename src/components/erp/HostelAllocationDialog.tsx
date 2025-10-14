@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,59 +40,46 @@ const hostelTypes = {
 };
 
 export default function HostelAllocationDialog({ open, onOpenChange, application, onAllocationSuccess }: HostelAllocationDialogProps) {
-  const { hostelRooms, setHostelRooms, setStudents, setAdmissionApplications, setFees } = useData();
+  const { hostelRooms, setHostelRooms, setStudents, setFees } = useData();
   const { toast } = useToast();
 
   const [selectedHostelType, setSelectedHostelType] = useState<'Boys' | 'Girls' | ''>('');
   const [selectedHostel, setSelectedHostel] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
 
-  const [availableHostels, setAvailableHostels] = useState<string[]>([]);
-  const [availableRooms, setAvailableRooms] = useState<string[]>([]);
-  
-
+  // Effect to initialize hostel type based on application gender
   useEffect(() => {
-    if (application && application.gender) {
-      const gender = application.gender.toLowerCase();
-      if (gender === 'male') {
-        setSelectedHostelType('Boys');
-      } else if (gender === 'female') {
-        setSelectedHostelType('Girls');
-      } else {
+    if (open && application?.gender) {
+        const gender = application.gender.toLowerCase();
+        if (gender === 'male') {
+            setSelectedHostelType('Boys');
+        } else if (gender === 'female') {
+            setSelectedHostelType('Girls');
+        } else {
+            setSelectedHostelType('');
+        }
+    } else if (!open) {
+        // Reset state when dialog closes
         setSelectedHostelType('');
-      }
-    } else {
-        setSelectedHostelType('');
-    }
-    // Reset other fields when application changes
-    setSelectedHostel('');
-    setSelectedRoom('');
-  }, [application]);
-
-
-  useEffect(() => {
-    if (selectedHostelType) {
-        const hostels = hostelTypes[selectedHostelType] || [];
-        setAvailableHostels(hostels);
         setSelectedHostel('');
         setSelectedRoom('');
-    } else {
-        setAvailableHostels([]);
     }
+  }, [application, open]);
+
+
+  const availableHostels = useMemo(() => {
+    if (!selectedHostelType) return [];
+    return hostelTypes[selectedHostelType] || [];
   }, [selectedHostelType]);
-
-  useEffect(() => {
-    if (selectedHostel) {
-      const rooms = hostelRooms
-        .filter(room => room.occupants.length < room.capacity)
-        .map(room => room.roomNumber);
-      setAvailableRooms(rooms);
-       setSelectedRoom('');
-    } else {
-        setAvailableRooms([]);
-    }
+  
+  const availableRooms = useMemo(() => {
+    if (!selectedHostel) return [];
+    // This is a simplified logic. In a real app, you'd filter rooms by hostel name as well.
+    return hostelRooms
+      .filter(room => room.occupants.length < room.capacity)
+      .map(room => room.roomNumber);
   }, [selectedHostel, hostelRooms]);
-
+  
 
   const handleAllocate = () => {
     if (!application || !selectedHostel || !selectedRoom) {
@@ -100,61 +87,62 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
       return;
     }
 
-    // 1. Create new student
-    const newStudent: Student = {
-        id: `S${Date.now()}`,
-        name: application.studentName,
-        class: application.applyingForGrade,
-        section: 'A', // Default section
-        rollNumber: String(Math.floor(Math.random() * 100) + 1),
-        avatar: studentImages[Math.floor(Math.random() * studentImages.length)].imageUrl,
-    };
-    setStudents(prev => [...prev, newStudent]);
+    // 1. Check if student already exists. If not, create them.
+    // This logic assumes the student might have been created by the simple approve button.
+    // A more robust system would use unique IDs.
+    let studentId = '';
+    const existingStudent = useData().students.find(s => s.name === application.studentName);
+
+    if (!existingStudent) {
+        const newStudent: Student = {
+            id: `S${Date.now()}`,
+            name: application.studentName,
+            class: application.applyingForGrade,
+            section: 'A', // Default section
+            rollNumber: String(Math.floor(Math.random() * 100) + 1),
+            avatar: studentImages[Math.floor(Math.random() * studentImages.length)].imageUrl,
+        };
+        setStudents(prev => [...prev, newStudent]);
+        studentId = newStudent.id;
+
+        // Create fee record since they are being created here
+        const newFee: Fee = {
+            studentId: newStudent.id,
+            studentName: newStudent.name,
+            class: `${newStudent.class}${newStudent.section}`,
+            amount: 5500, // Default fee amount
+            status: 'Due',
+            dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
+        };
+        setFees(prev => [...prev, newFee]);
+    } else {
+        studentId = existingStudent.id;
+    }
+
 
     // 2. Update hostel room
     setHostelRooms(prevRooms =>
       prevRooms.map(room =>
         room.roomNumber === selectedRoom
-          ? { ...room, occupants: [...room.occupants, newStudent.name] }
+          ? { ...room, occupants: [...room.occupants, application.studentName] }
           : room
       )
     );
 
-    // 3. Create new fee record
-    const newFee: Fee = {
-        studentId: newStudent.id,
-        studentName: newStudent.name,
-        class: `${newStudent.class}${newStudent.section}`,
-        amount: 5500, // Default fee amount
-        status: 'Due',
-        dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
-    };
-    setFees(prev => [...prev, newFee]);
-
-    // 4. Remove application from pending
-    setAdmissionApplications(prev =>
-      prev.filter(app => app.id !== application.id)
-    );
-
     toast({
-      title: "Student Approved!",
-      description: `${application.studentName} has been admitted and allocated to Room ${selectedRoom}.`,
+      title: "Hostel Allocated!",
+      description: `${application.studentName} has been allocated to Room ${selectedRoom}.`,
     });
 
     onAllocationSuccess();
-    resetAndClose();
+    onOpenChange(false);
   };
   
   const resetAndClose = () => {
     onOpenChange(false);
-    setSelectedHostelType('');
-    setSelectedHostel('');
-    setSelectedRoom('');
-    setAvailableHostels([]);
-    setAvailableRooms([]);
   }
 
-  const gender = application?.gender?.toLowerCase();
+  const applicantGender = application?.gender?.toLowerCase();
 
   return (
     <Dialog open={open} onOpenChange={resetAndClose}>
@@ -170,11 +158,11 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
             <Label>Hostel Type</Label>
             <RadioGroup value={selectedHostelType} onValueChange={(value) => setSelectedHostelType(value as 'Boys' | 'Girls')}>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Boys" id="boys" disabled={gender !== 'male'} />
+                <RadioGroupItem value="Boys" id="boys" disabled={applicantGender !== 'male'} />
                 <Label htmlFor="boys">Boys Hostel</Label>
               </div>
               <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Girls" id="girls" disabled={gender !== 'female'} />
+                <RadioGroupItem value="Girls" id="girls" disabled={applicantGender !== 'female'} />
                 <Label htmlFor="girls">Girls Hostel</Label>
               </div>
             </RadioGroup>
@@ -221,7 +209,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={resetAndClose}>Cancel</Button>
-          <Button onClick={handleAllocate} disabled={!selectedRoom}>Allocate & Approve</Button>
+          <Button onClick={handleAllocate} disabled={!selectedRoom}>Allocate Room</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
