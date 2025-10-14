@@ -34,6 +34,7 @@ import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { useData } from "@/lib/data-context";
 import { AdmissionApplication } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 const admissionFormSchema = z.object({
   studentFirstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -61,6 +62,7 @@ export default function AdmissionsPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'admission-hero');
   const { setAdmissionApplications } = useData();
+  const router = useRouter();
 
   const form = useForm<AdmissionFormValues>({
     resolver: zodResolver(admissionFormSchema),
@@ -71,6 +73,10 @@ export default function AdmissionsPage() {
       parentFirstName: "",
       parentLastName: "",
       parentEmail: "",
+      parentPhone: "",
+      address: "",
+      gender: "",
+      applyingForGrade: "",
     },
   });
 
@@ -83,6 +89,7 @@ export default function AdmissionsPage() {
         applyingForGrade: data.applyingForGrade,
         status: 'Pending',
         date: new Date().toISOString().split('T')[0],
+        gender: data.gender,
     };
 
     setAdmissionApplications(prev => [newApplication, ...prev]);
@@ -92,6 +99,7 @@ export default function AdmissionsPage() {
       description: `Thank you, ${data.parentFirstName}. Your application for ${data.studentFirstName} has been received and is pending review.`,
     });
     form.reset();
+    router.push("/login");
   }
 
   return (
@@ -121,8 +129,8 @@ export default function AdmissionsPage() {
         </div>
 
         <div className="max-w-4xl mx-auto p-4 sm:p-6 md:p-8">
-            <Link href="/" className="mb-8 inline-block">
-                <Button variant="outline">&larr; Back to Dashboard</Button>
+            <Link href="/login" className="mb-8 inline-block">
+                <Button variant="outline">&larr; Back to Login</Button>
             </Link>
           <div className="bg-card p-6 sm:p-8 rounded-xl shadow-lg border">
             <div className="flex items-center gap-4 mb-6">

@@ -28,6 +28,7 @@ import { useToast } from "@/hooks/use-toast";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
+import { useRouter } from "next/navigation";
 
 const jobApplicationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -46,6 +47,7 @@ type JobApplicationValues = z.infer<typeof jobApplicationSchema>;
 export default function CareersPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'careers-hero');
+  const router = useRouter();
 
   const form = useForm<JobApplicationValues>({
     resolver: zodResolver(jobApplicationSchema),
@@ -53,6 +55,9 @@ export default function CareersPage() {
       fullName: "",
       email: "",
       phone: "",
+      subject: "",
+      experience: 0,
+      resume: "",
     },
   });
 
@@ -62,6 +67,7 @@ export default function CareersPage() {
       description: `Thank you for your interest, ${data.fullName}. We have received your application.`,
     });
     form.reset();
+    router.push("/login");
   }
 
   return (
