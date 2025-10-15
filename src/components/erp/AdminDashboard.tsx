@@ -62,33 +62,27 @@ export default function AdminDashboard() {
             <NoticeBoard userRole="Admin" />
         </div>
         <div className="flex flex-col gap-6">
-            <AdmissionChart />
+            <AdmissionRequests />
         </div>
       </div>
 
-      <div className="grid gap-6">
-        <AdmissionRequests />
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+            <JobApplications />
+        </div>
+        <div className="lg:col-span-1">
+            <HostelOccupancy />
+        </div>
+      </div>
+      
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <FeeStatusChart />
+        <AdmissionChart />
+        <HostelChart />
       </div>
 
        <div className="grid gap-6">
-        <JobApplications />
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-1">
-          <FeeStatusChart />
-        </div>
-        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div/>
-          <HostelChart />
-        </div>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2">
-          <HostelOccupancy />
-        </div>
-        <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground">
+         <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground">
             <UserPlus className="h-8 w-8 mb-2" />
             <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
             <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
