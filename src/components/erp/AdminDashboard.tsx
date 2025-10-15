@@ -71,7 +71,14 @@ export default function AdminDashboard() {
             <JobApplications />
         </div>
         <div className="lg:col-span-1">
-            <HostelOccupancy />
+             <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground h-full">
+                <UserPlus className="h-8 w-8 mb-2" />
+                <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
+                <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
+                <Link href="/admissions">
+                    <Button>Go to Admissions</Button>
+                </Link>
+            </Card>
         </div>
       </div>
       
@@ -81,15 +88,8 @@ export default function AdminDashboard() {
         <HostelChart />
       </div>
 
-       <div className="grid gap-6">
-         <Card className="flex flex-col items-center justify-center p-6 bg-accent text-accent-foreground">
-            <UserPlus className="h-8 w-8 mb-2" />
-            <h3 className="text-lg font-bold font-headline text-center mb-2">New Admissions</h3>
-            <p className="text-sm text-center mb-4">Generate and manage new student admission forms.</p>
-            <Link href="/admissions">
-                <Button>Go to Admissions</Button>
-            </Link>
-        </Card>
+      <div className="grid grid-cols-1 gap-6">
+        <HostelOccupancy />
       </div>
     </div>
     <TeacherCredentials open={isCredentialsOpen} onOpenChange={setIsCredentialsOpen} />
