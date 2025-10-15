@@ -1,8 +1,9 @@
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication, Notice } from './types';
 import { PlaceHolderImages } from './placeholder-images';
 import { subDays, format } from 'date-fns';
 
 const studentImages = PlaceHolderImages.filter(p => p.id.startsWith('student-avatar'));
+const today = new Date();
 
 export const users: User[] = [
   { id: 'U001', userId: 'admin', password: 'password', role: 'Admin' },
@@ -43,7 +44,7 @@ export const hostelFees: HostelFee[] = [
     { studentId: 'S005', studentName: 'Advik Reddy', roomNumber: '201', amount: 3000, status: 'Paid', dueDate: '2024-07-10' },
 ];
 
-const today = new Date();
+
 export const studentAttendance: StudentAttendance[] = [
   {
     studentId: 'S001', records: [
@@ -100,4 +101,9 @@ export const admissionApplications: AdmissionApplication[] = [
 export const jobApplications: JobApplication[] = [
     { id: 'JOB001', fullName: 'Sanjay Gupta', email: 'sanjay.g@example.com', phone: '9876543210', subject: 'Mathematics', experience: 5, resume: 'https://www.linkedin.com/in/sanjaygupta', status: 'Pending', date: format(subDays(today, 3), 'yyyy-MM-dd') },
     { id: 'JOB002', fullName: 'Meera Devi', email: 'meera.d@example.com', phone: '8765432109', subject: 'Physics', experience: 8, resume: 'Experienced Physics teacher with a passion for modern teaching methods. Proven track record of improving student grades. References available upon request.', status: 'Pending', date: format(subDays(today, 1), 'yyyy-MM-dd') },
+];
+
+export const notices: Notice[] = [
+    { id: 'N001', title: 'Annual Sports Day', content: 'The Annual Sports Day will be held on August 15th, 2024. All students are requested to participate.', author: 'Admin', role: 'Admin', date: format(subDays(today, 1), 'yyyy-MM-dd') },
+    { id: 'N002', title: 'Science Fair Submission Deadline', content: 'The last date for submitting projects for the Science Fair is August 10th, 2024.', author: 'Ms. Jane Smith', role: 'Teacher', date: format(subDays(today, 2), 'yyyy-MM-dd') },
 ];

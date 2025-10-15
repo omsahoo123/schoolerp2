@@ -14,6 +14,7 @@ import { useState } from "react";
 import TeacherCredentials from "./TeacherCredentials";
 import AdmissionRequests from "./AdmissionRequests";
 import JobApplications from "./JobApplications";
+import NoticeBoard from "./NoticeBoard";
 
 export default function AdminDashboard() {
     const { students, fees, hostelRooms } = useData();
@@ -56,6 +57,15 @@ export default function AdminDashboard() {
         />
       </div>
 
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2">
+            <NoticeBoard userRole="Admin" />
+        </div>
+        <div className="flex flex-col gap-6">
+            <AdmissionChart />
+        </div>
+      </div>
+
       <div className="grid gap-6">
         <AdmissionRequests />
       </div>
@@ -69,7 +79,7 @@ export default function AdminDashboard() {
           <FeeStatusChart />
         </div>
         <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <AdmissionChart />
+          <div/>
           <HostelChart />
         </div>
       </div>

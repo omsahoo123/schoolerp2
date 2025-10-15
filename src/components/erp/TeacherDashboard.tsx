@@ -7,6 +7,7 @@ import AttendanceLogger from "./AttendanceLogger";
 import StudentCredentials from "./StudentCredentials";
 import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
+import NoticeBoard from "./NoticeBoard";
 
 export default function TeacherDashboard() {
   const [isAttendanceOpen, setIsAttendanceOpen] = useState(false);
@@ -49,9 +50,15 @@ export default function TeacherDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1">
-        <Homework isTeacher={true} />
+       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2">
+           <NoticeBoard userRole="Teacher" />
+        </div>
+        <div className="lg:col-span-1">
+          <Homework isTeacher={true} />
+        </div>
       </div>
+
 
       <AttendanceLogger open={isAttendanceOpen} onOpenChange={setIsAttendanceOpen} />
       <StudentCredentials open={isCredentialsOpen} onOpenChange={setIsCredentialsOpen} />

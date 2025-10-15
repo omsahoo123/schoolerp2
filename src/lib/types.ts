@@ -100,3 +100,12 @@ export interface User {
   role: 'Admin' | 'Teacher' | 'Student' | 'Finance';
   studentId?: string; // Only for student users
 }
+
+export interface Notice {
+  id: string;
+  title: string;
+  content: string;
+  author: string;
+  role: 'Admin' | 'Teacher';
+  date: string;
+}

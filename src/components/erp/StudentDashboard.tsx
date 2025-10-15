@@ -6,6 +6,7 @@ import AttendanceView from "./AttendanceView";
 import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
 import FeePayment from "./FeePayment";
+import NoticeBoard from "./NoticeBoard";
 
 export default function StudentDashboard() {
   const { students, studentAttendance, fees, hostelFees } = useData();
@@ -60,15 +61,19 @@ export default function StudentDashboard() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="lg:col-span-2 space-y-6">
+       <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+            <NoticeBoard userRole="Student" />
+        </div>
+        <div className="lg:col-span-1">
+            <AttendanceView studentId={loggedInStudent.id} />
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-1">
           {tuitionFee && <FeePayment fee={tuitionFee} feeType="tuition" title="Tuition Fee Status" />}
           {hostelFee && <FeePayment fee={hostelFee} feeType="hostel" title="Hostel Fee Status" />}
           <Homework studentClass={loggedInStudent.class} studentSection={loggedInStudent.section} />
-        </div>
-        <div className="lg:col-span-1">
-          <AttendanceView studentId={loggedInStudent.id} />
-        </div>
       </div>
     </div>
   );
