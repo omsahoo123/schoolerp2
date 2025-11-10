@@ -4,61 +4,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // Helper function to check if a user is signed in.
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Notices are public
+    // Allow public read access for notices, but only authenticated writes.
     match /notices/{noticeId} {
       allow read: if true;
-      allow write: if isSignedIn(); // Or more specific rules, e.g. if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Teacher'];
+      allow write: if isSignedIn();
     }
 
-    // Users can read their own profile
+    // Allow signed-in users to read and write to all other collections.
+    // This is a broad rule for development and can be refined later
+    // for more granular, role-based access control.
+    match /{document=**} {
+      allow read, write: if isSignedIn();
+    }
+
+    // This rule is overridden by the one above, but is a good example
+    // of more specific user-based document access.
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
-    }
-
-    // Students can read their own data, teachers/admins can read all
-    match /students/{studentId} {
-        allow read, write: if isSignedIn(); // TODO: Implement role-based access
-    }
-
-    match /teachers/{teacherId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /fees/{feeId} {
-        allow read, write: if isSignedIn();
-    }
-    
-    match /hostelFees/{feeId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /studentAttendance/{studentId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /hostelRooms/{roomId} {
-        allow read, write: if isSignedIn();
-    }
-    
-    match /homeworks/{homeworkId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /admissions/{admissionId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /admissionApplications/{appId} {
-        allow read, write: if isSignedIn();
-    }
-
-    match /jobApplications/{appId} {
-        allow read, write: if isSignedIn();
     }
   }
 }
