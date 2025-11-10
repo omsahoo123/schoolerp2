@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -20,6 +21,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Homework as HomeworkType } from "@/lib/types";
 import { format } from "date-fns";
 import { useData } from "@/lib/data-context";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type HomeworkProps = {
   isTeacher?: boolean;
@@ -28,28 +31,31 @@ type HomeworkProps = {
 };
 
 export default function Homework({ isTeacher = false, studentClass, studentSection }: HomeworkProps) {
-  const { homeworks, setHomeworks } = useData();
+  const { homeworks } = useData();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const filteredHomeworks = isTeacher
     ? homeworks
-    : homeworks.filter(hw => hw.class === studentClass && hw.section === studentSection);
+    : homeworks?.filter(hw => hw.class === studentClass && hw.section === studentSection);
 
-  const handleAddHomework = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddHomework = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!firestore) return;
+
     const formData = new FormData(event.currentTarget);
-    const newHomework: HomeworkType = {
-      id: `HW${Date.now()}`,
+    const newHomework = {
       class: formData.get("class") as string,
       section: formData.get("section") as string,
       subject: formData.get("subject") as string,
       title: formData.get("title") as string,
       description: formData.get("description") as string,
       dueDate: formData.get("dueDate") as string,
-      assignedBy: "Me",
+      assignedBy: "Me", // This could be replaced with the actual teacher's name
     };
-    setHomeworks(prev => [newHomework, ...prev]);
+    await addDoc(collection(firestore, "homeworks"), newHomework);
+
     setOpen(false);
     toast({
       title: "Homework Assigned!",
@@ -121,7 +127,7 @@ export default function Homework({ isTeacher = false, studentClass, studentSecti
       </CardHeader>
       <CardContent>
         <div className="space-y-4 max-h-96 overflow-auto">
-          {filteredHomeworks.length > 0 ? filteredHomeworks.map((hw) => (
+          {(filteredHomeworks || []).length > 0 ? filteredHomeworks?.map((hw) => (
             <div key={hw.id} className="p-4 border rounded-lg bg-background">
               <div className="flex justify-between items-start">
                 <div>

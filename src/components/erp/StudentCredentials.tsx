@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,6 +23,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Copy } from "lucide-react";
 import { useData } from "@/lib/data-context";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type StudentCredentialsProps = {
   open: boolean;
@@ -29,17 +32,20 @@ type StudentCredentialsProps = {
 };
 
 export default function StudentCredentials({ open, onOpenChange }: StudentCredentialsProps) {
-  const { students, setUsers } = useData();
+  const { students } = useData();
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [generatedId, setGeneratedId] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!selectedStudentId) {
       toast({ title: "Error", description: "Please select a student.", variant: "destructive" });
       return;
     }
+    if (!firestore || !students) return;
+
     const student = students.find(s => s.id === selectedStudentId);
     if (!student) return;
 
@@ -50,16 +56,12 @@ export default function StudentCredentials({ open, onOpenChange }: StudentCreden
     setGeneratedPassword(password);
     
     // Add the new student to the users list
-    setUsers(prevUsers => [
-        ...prevUsers,
-        { 
-            id: `U${Date.now()}`, 
-            userId: studentUserId, 
-            password: password, 
-            role: 'Student',
-            studentId: student.id 
-        }
-    ]);
+    await addDoc(collection(firestore, "users"), {
+        userId: studentUserId, 
+        password: password, 
+        role: 'Student',
+        studentId: student.id 
+    });
     
     toast({ title: "Credentials Generated!", description: `Login details created for ${student.name}.` });
   };
@@ -93,7 +95,7 @@ export default function StudentCredentials({ open, onOpenChange }: StudentCreden
                 <SelectValue placeholder="Select a student..." />
               </SelectTrigger>
               <SelectContent>
-                {students.map(student => (
+                {students?.map(student => (
                   <SelectItem key={student.id} value={student.id}>
                     {student.name} - Class {student.class}{student.section}
                   </SelectItem>

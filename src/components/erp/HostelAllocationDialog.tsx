@@ -21,10 +21,12 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
-import { AdmissionApplication, Fee, Student, HostelFee } from "@/lib/types";
+import { AdmissionApplication, Student, Fee, HostelFee } from "@/lib/types";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { addDays, format } from "date-fns";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 
 type HostelAllocationDialogProps = {
   open: boolean;
@@ -41,8 +43,9 @@ const hostelTypes = {
 };
 
 export default function HostelAllocationDialog({ open, onOpenChange, application, onAllocationSuccess }: HostelAllocationDialogProps) {
-  const { hostelRooms, setHostelRooms, setStudents, setFees, students: allStudents, setHostelFees } = useData();
+  const { hostelRooms, students: allStudents } = useData();
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const [selectedHostelType, setSelectedHostelType] = useState<'Boys' | 'Girls' | ''>('');
   const [selectedHostel, setSelectedHostel] = useState('');
@@ -76,15 +79,15 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
   }, [selectedHostelType]);
   
   const availableRooms = useMemo(() => {
-    if (!selectedHostel) return [];
+    if (!selectedHostel || !hostelRooms) return [];
     // This is a simplified logic. In a real app, you'd filter rooms by hostel name as well.
     return hostelRooms
       .filter(room => room.occupants.length < room.capacity)
       .map(room => room.roomNumber);
   }, [selectedHostel, hostelRooms]);
 
-  const handleAllocate = () => {
-    if (!application || !selectedHostel || !selectedRoom) {
+  const handleAllocate = async () => {
+    if (!application || !selectedHostel || !selectedRoom || !firestore || !allStudents) {
       toast({ title: "Error", description: "Please select all fields.", variant: "destructive" });
       return;
     }
@@ -93,48 +96,47 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
     const existingStudent = allStudents.find(s => s.name === application.studentName);
 
     if (!existingStudent) {
-        const newStudent: Student = {
-            id: `S${Date.now()}`,
+        const newStudent = {
             name: application.studentName,
             class: application.applyingForGrade,
-            section: 'A', // Default section
+            section: 'A' as const, // Default section
             rollNumber: String(Math.floor(Math.random() * 100) + 1),
             avatar: studentImages[Math.floor(Math.random() * studentImages.length)].imageUrl,
         };
-        setStudents(prev => [...prev, newStudent]);
-        studentId = newStudent.id;
+        const studentDocRef = await addDoc(collection(firestore, "students"), newStudent);
+        studentId = studentDocRef.id;
 
-        const newFee: Fee = {
-            studentId: newStudent.id,
+        const newFee: Omit<Fee, 'studentId'> & { studentId: string } = {
+            studentId: studentId,
             studentName: newStudent.name,
             class: `${newStudent.class}${newStudent.section}`,
             amount: 5500,
-            status: 'Due',
+            status: 'Due' as const,
             dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
         };
-        setFees(prev => [...prev, newFee]);
+        await addDoc(collection(firestore, "fees"), newFee);
     } else {
         studentId = existingStudent.id;
     }
 
-    setHostelRooms(prevRooms =>
-      prevRooms.map(room =>
-        room.roomNumber === selectedRoom
-          ? { ...room, occupants: [...room.occupants, application.studentName] }
-          : room
-      )
-    );
+    const roomToUpdate = hostelRooms?.find(r => r.roomNumber === selectedRoom);
+    if (roomToUpdate) {
+        const roomDocRef = doc(firestore, "hostelRooms", roomToUpdate.id);
+        await updateDoc(roomDocRef, {
+            occupants: [...roomToUpdate.occupants, application.studentName]
+        });
+    }
 
     // Create a new hostel fee record
-    const newHostelFee: HostelFee = {
+    const newHostelFee = {
         studentId: studentId,
         studentName: application.studentName,
         roomNumber: selectedRoom,
         amount: 2500, // Default hostel fee amount
-        status: 'Due',
+        status: 'Due' as const,
         dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
     };
-    setHostelFees(prev => [...prev, newHostelFee]);
+    await addDoc(collection(firestore, "hostelFees"), newHostelFee);
 
     toast({
       title: "Hostel Allocated!",
@@ -198,18 +200,18 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
             <Select 
                 value={selectedRoom} 
                 onValueChange={setSelectedRoom} 
-                disabled={!selectedHostel || availableRooms.length === 0}
+                disabled={!selectedHostel || (availableRooms || []).length === 0}
             >
               <SelectTrigger id="room-number">
                 <SelectValue placeholder="Select room" />
               </SelectTrigger>
               <SelectContent>
-                {availableRooms.map(room => (
+                {availableRooms?.map(room => (
                   <SelectItem key={room} value={room}>Room {room}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {availableRooms.length === 0 && selectedHostel && (
+            {(availableRooms || []).length === 0 && selectedHostel && (
                 <p className="text-xs text-destructive">No rooms available in this hostel.</p>
             )}
           </div>

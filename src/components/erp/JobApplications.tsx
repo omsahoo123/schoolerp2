@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -5,31 +6,33 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
-import { JobApplication, Teacher } from "@/lib/types";
+import { JobApplication } from "@/lib/types";
 import { Check, Eye, X } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 
 export default function JobApplications() {
-    const { jobApplications, setJobApplications, setTeachers } = useData();
+    const { jobApplications } = useData();
     const { toast } = useToast();
     const [selectedApplication, setSelectedApplication] = useState<JobApplication | null>(null);
     const [isResumeOpen, setIsResumeOpen] = useState(false);
+    const firestore = useFirestore();
 
-    const handleAccept = (application: JobApplication) => {
+    const handleAccept = async (application: JobApplication) => {
+        if (!firestore) return;
         // Create new teacher
-        const newTeacher: Teacher = {
-            id: `T${Date.now()}`,
+        const newTeacher = {
             name: application.fullName,
             subject: application.subject,
         };
-        setTeachers(prev => [...prev, newTeacher]);
+        await addDoc(collection(firestore, "teachers"), newTeacher);
         
-        setJobApplications(prev => 
-            prev.map(app => app.id === application.id ? {...app, status: 'Accepted'} : app)
-        );
+        const appDocRef = doc(firestore, "jobApplications", application.id);
+        await updateDoc(appDocRef, { status: 'Accepted' });
 
         toast({
             title: `Application Accepted`,
@@ -37,10 +40,10 @@ export default function JobApplications() {
         });
     };
 
-    const handleReject = (application: JobApplication) => {
-         setJobApplications(prev => 
-            prev.map(app => app.id === application.id ? {...app, status: 'Rejected'} : app)
-        );
+    const handleReject = async (application: JobApplication) => {
+        if (!firestore) return;
+        const appDocRef = doc(firestore, "jobApplications", application.id);
+        await updateDoc(appDocRef, { status: 'Rejected' });
 
         toast({
             title: `Application Rejected`,
@@ -54,7 +57,7 @@ export default function JobApplications() {
         setIsResumeOpen(true);
     }
 
-    const displayedApplications = jobApplications.filter(app => app.status === 'Pending');
+    const displayedApplications = jobApplications?.filter(app => app.status === 'Pending') || [];
 
     return (
         <>
@@ -76,8 +79,8 @@ export default function JobApplications() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {jobApplications.length > 0 ? (
-                            jobApplications.map(app => (
+                        {(jobApplications || []).length > 0 ? (
+                            jobApplications?.map(app => (
                             <TableRow key={app.id}>
                                 <TableCell className="font-medium">{app.fullName}</TableCell>
                                 <TableCell className="capitalize">{app.subject}</TableCell>

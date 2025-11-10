@@ -25,8 +25,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard } from "lucide-react";
-import { useData } from "@/lib/data-context";
 import Link from "next/link";
+import { useFirestore } from "@/firebase";
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 
 const paymentFormSchema = z.object({
   cardNumber: z.string().regex(/^\d{16}$/, "Card number must be 16 digits."),
@@ -41,7 +42,7 @@ export default function PaymentForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
-  const { setFees, setHostelFees } = useData();
+  const firestore = useFirestore();
 
   const studentId = searchParams.get("studentId");
   const amount = searchParams.get("amount");
@@ -57,26 +58,20 @@ export default function PaymentForm() {
     }
   });
 
-  function onSubmit(data: PaymentFormValues) {
-    if (!studentId || !feeType) {
+  async function onSubmit(data: PaymentFormValues) {
+    if (!studentId || !feeType || !firestore) {
         toast({ title: "Error", description: "Payment information incomplete.", variant: "destructive"});
         return;
     }
 
-    if(feeType === 'tuition') {
-        setFees(prevFees =>
-            prevFees.map(fee =>
-                fee.studentId === studentId ? { ...fee, status: "Paid" } : fee
-            )
-        );
-    } else if (feeType === 'hostel') {
-        setHostelFees(prevFees =>
-            prevFees.map(fee =>
-                fee.studentId === studentId ? { ...fee, status: "Paid" } : fee
-            )
-        );
+    const collectionName = feeType === 'tuition' ? 'fees' : 'hostelFees';
+    const q = query(collection(firestore, collectionName), where("studentId", "==", studentId));
+    
+    const querySnapshot = await getDocs(q);
+    if (!querySnapshot.empty) {
+        const feeDoc = querySnapshot.docs[0];
+        await updateDoc(doc(firestore, collectionName, feeDoc.id), { status: "Paid" });
     }
-
 
     toast({
         title: "Payment Successful!",

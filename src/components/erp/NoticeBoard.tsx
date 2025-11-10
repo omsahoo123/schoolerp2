@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -21,30 +22,34 @@ import { Notice } from "@/lib/types";
 import { format } from "date-fns";
 import { useData } from "@/lib/data-context";
 import { ScrollArea } from "../ui/scroll-area";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type NoticeBoardProps = {
   userRole: 'Admin' | 'Teacher' | 'Student' | 'Finance';
 };
 
 export default function NoticeBoard({ userRole }: NoticeBoardProps) {
-  const { notices, setNotices } = useData();
+  const { notices } = useData();
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
+  const firestore = useFirestore();
 
   const canPostNotice = userRole === 'Admin' || userRole === 'Teacher';
 
-  const handleAddNotice = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleAddNotice = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!firestore) return;
+
     const formData = new FormData(event.currentTarget);
-    const newNotice: Notice = {
-      id: `N${Date.now()}`,
+    const newNotice = {
       title: formData.get("title") as string,
       content: formData.get("content") as string,
       author: userRole, // Simplified author
       role: userRole as 'Admin' | 'Teacher',
       date: new Date().toISOString().split('T')[0],
     };
-    setNotices(prev => [newNotice, ...prev]);
+    await addDoc(collection(firestore, "notices"), newNotice);
     setOpen(false);
     toast({
       title: "Notice Posted!",
@@ -99,7 +104,7 @@ export default function NoticeBoard({ userRole }: NoticeBoardProps) {
       <CardContent>
         <ScrollArea className="h-96">
             <div className="space-y-4">
-            {notices.length > 0 ? notices.map((notice) => (
+            {(notices || []).length > 0 ? notices?.map((notice) => (
                 <div key={notice.id} className="p-4 border rounded-lg bg-background">
                 <div className="flex justify-between items-start">
                     <div>

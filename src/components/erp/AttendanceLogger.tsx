@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -29,6 +30,8 @@ import { format } from "date-fns";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { CalendarIcon } from "lucide-react";
 import { Calendar } from "../ui/calendar";
+import { useFirestore } from "@/firebase";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 
 type AttendanceLoggerProps = {
   open: boolean;
@@ -38,16 +41,17 @@ type AttendanceLoggerProps = {
 type AttendanceState = Record<string, boolean>;
 
 export default function AttendanceLogger({ open, onOpenChange }: AttendanceLoggerProps) {
-  const { students: mockStudents, setStudentAttendance } = useData();
+  const { students: mockStudents } = useData();
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [students, setStudents] = useState<Student[]>([]);
   const [attendance, setAttendance] = useState<AttendanceState>({});
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  const classes = [...new Set(mockStudents.map(s => s.class))];
-  const sections = [...new Set(mockStudents.filter(s => s.class === selectedClass).map(s => s.section))];
+  const classes = mockStudents ? [...new Set(mockStudents.map(s => s.class))] : [];
+  const sections = mockStudents ? [...new Set(mockStudents.filter(s => s.class === selectedClass).map(s => s.section))] : [];
 
   useEffect(() => {
     setSelectedSection('');
@@ -56,7 +60,7 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
   }, [selectedClass]);
   
   useEffect(() => {
-    if (selectedClass && selectedSection) {
+    if (selectedClass && selectedSection && mockStudents) {
         const filteredStudents = mockStudents.filter(s => s.class === selectedClass && s.section === selectedSection);
         setStudents(filteredStudents);
         const initialAttendance = filteredStudents.reduce((acc, student) => {
@@ -80,8 +84,8 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
     setAttendance(prev => ({ ...prev, [studentId]: isPresent }));
   };
 
-  const handleSubmit = () => {
-    if (!date) {
+  const handleSubmit = async () => {
+    if (!date || !firestore) {
         toast({
             title: "Error",
             description: "Please select a date.",
@@ -93,26 +97,25 @@ export default function AttendanceLogger({ open, onOpenChange }: AttendanceLogge
     const presentCount = Object.values(attendance).filter(Boolean).length;
     const absentCount = students.length - presentCount;
 
-    setStudentAttendance(prevAttendance => {
-      const newAttendanceData = [...prevAttendance];
-      
-      Object.entries(attendance).forEach(([studentId, isPresent]) => {
-        const studentIndex = newAttendanceData.findIndex(sa => sa.studentId === studentId);
+    for (const student of students) {
+        const isPresent = attendance[student.id];
+        const attendanceDocRef = doc(firestore, "studentAttendance", student.id);
         const newRecord = { date: selectedDate, status: isPresent ? 'Present' : 'Absent' as const };
 
-        if (studentIndex > -1) {
-          const recordIndex = newAttendanceData[studentIndex].records.findIndex(r => r.date === selectedDate);
-          if (recordIndex > -1) {
-            newAttendanceData[studentIndex].records[recordIndex] = newRecord;
-          } else {
-            newAttendanceData[studentIndex].records.unshift(newRecord);
-          }
+        const docSnap = await getDoc(attendanceDocRef);
+        if (docSnap.exists()) {
+            const existingRecords = docSnap.data().records || [];
+            const recordIndex = existingRecords.findIndex((r: any) => r.date === selectedDate);
+            if (recordIndex > -1) {
+                existingRecords[recordIndex] = newRecord;
+            } else {
+                existingRecords.unshift(newRecord);
+            }
+            await updateDoc(attendanceDocRef, { records: existingRecords });
         } else {
-          newAttendanceData.push({ studentId, records: [newRecord] });
+            await setDoc(attendanceDocRef, { studentId: student.id, records: [newRecord] });
         }
-      });
-      return newAttendanceData;
-    });
+    }
 
     toast({
       title: "Attendance Submitted",

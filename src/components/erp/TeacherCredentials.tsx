@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -22,6 +23,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Copy, KeyRound } from "lucide-react";
 import { useData } from "@/lib/data-context";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 type TeacherCredentialsProps = {
   open: boolean;
@@ -29,17 +32,20 @@ type TeacherCredentialsProps = {
 };
 
 export default function TeacherCredentials({ open, onOpenChange }: TeacherCredentialsProps) {
-  const { teachers, setUsers } = useData();
+  const { teachers } = useData();
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
   const [generatedId, setGeneratedId] = useState('');
   const [generatedPassword, setGeneratedPassword] = useState('');
   const { toast } = useToast();
+  const firestore = useFirestore();
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     if (!selectedTeacherId) {
       toast({ title: "Error", description: "Please select a teacher.", variant: "destructive" });
       return;
     }
+    if (!firestore || !teachers) return;
+
     const teacher = teachers.find(t => t.id === selectedTeacherId);
     if (!teacher) return;
 
@@ -50,10 +56,11 @@ export default function TeacherCredentials({ open, onOpenChange }: TeacherCreden
     setGeneratedPassword(password);
     
     // Add the new teacher to the users list
-    setUsers(prevUsers => [
-        ...prevUsers,
-        { id: `U${Date.now()}`, userId: teacherUserId, password: password, role: 'Teacher' }
-    ]);
+    await addDoc(collection(firestore, "users"), {
+        userId: teacherUserId,
+        password: password,
+        role: 'Teacher'
+    });
     
     toast({ title: "Credentials Generated!", description: `Login details created for ${teacher.name}.` });
   };
@@ -87,7 +94,7 @@ export default function TeacherCredentials({ open, onOpenChange }: TeacherCreden
                 <SelectValue placeholder="Select a teacher..." />
               </SelectTrigger>
               <SelectContent>
-                {teachers.map(teacher => (
+                {teachers?.map(teacher => (
                   <SelectItem key={teacher.id} value={teacher.id}>
                     {teacher.name} - {teacher.subject}
                   </SelectItem>

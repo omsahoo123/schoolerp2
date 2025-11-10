@@ -1,3 +1,4 @@
+
 export interface Student {
   id: string;
   name: string;
@@ -16,6 +17,7 @@ export interface Teacher {
 export type FeeStatus = 'Paid' | 'Due' | 'Overdue';
 
 export interface Fee {
+  id: string; // Document ID from Firestore
   studentId: string;
   studentName: string;
   class: string;
@@ -25,6 +27,7 @@ export interface Fee {
 }
 
 export interface HostelFee {
+  id: string; // Document ID from Firestore
   studentId: string;
   studentName: string;
   roomNumber: string;
@@ -41,6 +44,7 @@ export interface AttendanceRecord {
 }
 
 export interface StudentAttendance {
+  id: string; // Document ID from Firestore (same as studentId)
   studentId: string;
   records: AttendanceRecord[];
 }
@@ -64,6 +68,7 @@ export interface Homework {
 }
 
 export interface Admission {
+    id: string; // Document ID from Firestore
     month: string;
     admitted: number;
     capacity: number;

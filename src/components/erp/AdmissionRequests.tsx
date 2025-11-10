@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -5,50 +6,51 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
-import { AdmissionApplication, Student, Fee } from "@/lib/types";
+import { AdmissionApplication } from "@/lib/types";
 import { Check, X, BedDouble } from "lucide-react";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { useState } from "react";
 import HostelAllocationDialog from "./HostelAllocationDialog";
 import { addDays, format } from "date-fns";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection, doc, updateDoc } from "firebase/firestore";
 
 const studentImages = PlaceHolderImages.filter(p => p.id.startsWith('student-avatar'));
 
 export default function AdmissionRequests() {
-    const { admissionApplications, setAdmissionApplications, setStudents, setFees } = useData();
+    const { admissionApplications } = useData();
     const { toast } = useToast();
     const [isHostelDialogOpen, setIsHostelDialogOpen] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState<AdmissionApplication | null>(null);
+    const firestore = useFirestore();
 
-    const pendingApplications = admissionApplications.filter(app => app.status === 'Pending');
+    const handleApproveClick = async (application: AdmissionApplication) => {
+        if (!firestore) return;
 
-    const handleApproveClick = (application: AdmissionApplication) => {
         // Create new student
-        const newStudent: Student = {
-            id: `S${Date.now()}`,
+        const newStudent = {
             name: application.studentName,
             class: application.applyingForGrade,
             section: 'A', // Default section
             rollNumber: String(Math.floor(Math.random() * 100) + 1), // Assign random roll number
             avatar: studentImages[Math.floor(Math.random() * studentImages.length)].imageUrl,
         };
-        setStudents(prev => [...prev, newStudent]);
+        const studentDocRef = await addDoc(collection(firestore, "students"), newStudent);
         
         // Create new fee record for finance
-        const newFee: Fee = {
-            studentId: newStudent.id,
+        const newFee = {
+            studentId: studentDocRef.id,
             studentName: newStudent.name,
             class: `${newStudent.class}${newStudent.section}`,
             amount: 5500, // Default fee amount, can be edited by finance
-            status: 'Due',
+            status: 'Due' as const,
             dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
         };
-        setFees(prev => [...prev, newFee]);
+        await addDoc(collection(firestore, "fees"), newFee);
 
-        // Remove application from pending list
-        setAdmissionApplications(prev => 
-            prev.map(app => app.id === application.id ? {...app, status: 'Approved'} : app)
-        );
+        // Update application status
+        const appDocRef = doc(firestore, "admissionApplications", application.id);
+        await updateDoc(appDocRef, { status: 'Approved' });
 
         toast({
             title: `Application Approved`,
@@ -56,10 +58,10 @@ export default function AdmissionRequests() {
         });
     };
 
-    const handleRejectClick = (application: AdmissionApplication) => {
-         setAdmissionApplications(prev => 
-            prev.map(app => app.id === application.id ? {...app, status: 'Rejected'} : app)
-        );
+    const handleRejectClick = async (application: AdmissionApplication) => {
+        if (!firestore) return;
+        const appDocRef = doc(firestore, "admissionApplications", application.id);
+        await updateDoc(appDocRef, { status: 'Rejected' });
 
         toast({
             title: `Application Rejected`,
@@ -73,15 +75,14 @@ export default function AdmissionRequests() {
         setIsHostelDialogOpen(true);
     };
 
-    const handleAllocationSuccess = () => {
-        if(selectedApplication) {
-            setAdmissionApplications(prev => 
-                prev.map(app => app.id === selectedApplication.id ? {...app, status: 'Approved'} : app)
-            );
+    const handleAllocationSuccess = async () => {
+        if(selectedApplication && firestore) {
+             const appDocRef = doc(firestore, "admissionApplications", selectedApplication.id);
+             await updateDoc(appDocRef, { status: 'Approved' });
         }
     }
 
-    const displayedApplications = admissionApplications.filter(app => app.status === 'Pending');
+    const displayedApplications = admissionApplications?.filter(app => app.status === 'Pending') || [];
 
     return (
         <>

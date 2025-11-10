@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
@@ -12,18 +13,18 @@ import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
 import HostelChart from "./HostelChart";
 import { useState } from "react";
-import { Fee, HostelFee } from "@/lib/types";
+import { Fee } from "@/lib/types";
 import EditFeeDialog from "./EditFeeDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 
 export default function FinanceDashboard() {
-  const { fees, setFees, hostelFees, setHostelFees } = useData();
+  const { fees, hostelFees } = useData();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
 
-  const totalFees = fees.reduce((sum, fee) => sum + fee.amount, 0);
-  const paidFees = fees.filter(f => f.status === 'Paid').reduce((sum, fee) => sum + fee.amount, 0);
+  const totalFees = fees?.reduce((sum, fee) => sum + fee.amount, 0) || 0;
+  const paidFees = fees?.filter(f => f.status === 'Paid').reduce((sum, fee) => sum + fee.amount, 0) || 0;
   const dueFees = totalFees - paidFees;
   const collectionRate = totalFees > 0 ? (paidFees / totalFees) * 100 : 0;
 
@@ -37,18 +38,6 @@ export default function FinanceDashboard() {
   const handleEditClick = (fee: Fee) => {
     setSelectedFee(fee);
     setIsEditDialogOpen(true);
-  };
-  
-  const handleFeeUpdate = (studentId: string, newAmount: number) => {
-    setFees(prevFees =>
-        prevFees.map(fee =>
-            fee.studentId === studentId ? { ...fee, amount: newAmount } : fee
-        )
-    );
-    toast({
-        title: "Fee Updated",
-        description: "The student's fee amount has been successfully updated."
-    })
   };
 
   return (
@@ -76,7 +65,7 @@ export default function FinanceDashboard() {
         <KpiCard
           title="Overdue Payments"
           icon={<Users className="h-6 w-6 text-destructive" />}
-          value={fees.filter(f => f.status === 'Overdue').length.toString()}
+          value={fees?.filter(f => f.status === 'Overdue').length.toString() || '0'}
           description="Students with overdue fees"
         />
       </div>
@@ -107,7 +96,7 @@ export default function FinanceDashboard() {
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {fees.map((fee) => (
+                                {fees?.map((fee) => (
                                     <TableRow key={fee.studentId}>
                                     <TableCell className="font-medium">{fee.studentName}</TableCell>
                                     <TableCell>{fee.class}</TableCell>
@@ -154,7 +143,7 @@ export default function FinanceDashboard() {
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {hostelFees.map((fee) => (
+                                {hostelFees?.map((fee) => (
                                     <TableRow key={fee.studentId}>
                                     <TableCell className="font-medium">{fee.studentName}</TableCell>
                                     <TableCell>{fee.roomNumber}</TableCell>
@@ -205,7 +194,6 @@ export default function FinanceDashboard() {
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
             fee={selectedFee}
-            onSave={handleFeeUpdate}
         />
     )}
     </>
