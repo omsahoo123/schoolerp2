@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,8 +30,8 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
 import { useRouter } from "next/navigation";
-import { useData } from "@/lib/data-context";
-import { JobApplication } from "@/lib/types";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 const jobApplicationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters."),
@@ -50,7 +51,7 @@ export default function CareersPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'careers-hero');
   const router = useRouter();
-  const { setJobApplications } = useData();
+  const firestore = useFirestore();
 
   const form = useForm<JobApplicationValues>({
     resolver: zodResolver(jobApplicationSchema),
@@ -64,27 +65,42 @@ export default function CareersPage() {
     },
   });
 
-  function onSubmit(data: JobApplicationValues) {
-    const newApplication: JobApplication = {
-        id: `JOB${Date.now()}`,
+  async function onSubmit(data: JobApplicationValues) {
+    if (!firestore) {
+        toast({ title: "Error", description: "Database not connected.", variant: "destructive" });
+        return;
+    }
+
+    const newApplication = {
         fullName: data.fullName,
         email: data.email,
         phone: data.phone,
         subject: data.subject,
         experience: data.experience,
         resume: data.resume,
-        status: 'Pending',
+        status: 'Pending' as const,
         date: new Date().toISOString().split('T')[0],
     };
 
-    setJobApplications(prev => [newApplication, ...prev]);
+    try {
+        const docRef = await addDoc(collection(firestore, "jobApplications"), newApplication);
+        console.log("Application written with ID: ", docRef.id);
 
-    toast({
-      title: "Application Submitted!",
-      description: `Thank you for your interest, ${data.fullName}. We have received your application.`,
-    });
-    form.reset();
-    router.push("/login");
+        toast({
+          title: "Application Submitted!",
+          description: `Thank you for your interest, ${data.fullName}. We have received your application.`,
+        });
+        form.reset();
+        router.push("/login");
+
+    } catch(e: any) {
+        console.error("Error adding document: ", e);
+        toast({
+            title: "Submission Failed",
+            description: e.message || "Could not submit your application. Please try again.",
+            variant: "destructive",
+        });
+    }
   }
 
   return (
