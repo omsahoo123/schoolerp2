@@ -1,0 +1,399 @@
+
+{
+  "entities": {
+    "student": {
+      "title": "Student",
+      "description": "A student enrolled in the school.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the student."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the student."
+        },
+        "class": {
+          "type": "string",
+          "description": "The grade or class the student is in."
+        },
+        "section": {
+          "type": "string",
+          "description": "The section of the class (e.g., A, B, C)."
+        },
+        "rollNumber": {
+          "type": "string",
+          "description": "The student's roll number in their class."
+        },
+        "avatar": {
+          "type": "string",
+          "description": "URL to the student's profile picture."
+        }
+      },
+      "required": ["id", "name", "class", "section", "rollNumber"]
+    },
+    "teacher": {
+      "title": "Teacher",
+      "description": "A teacher at the school.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the teacher."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the teacher."
+        },
+        "subject": {
+          "type": "string",
+          "description": "The primary subject the teacher teaches."
+        }
+      },
+      "required": ["id", "name", "subject"]
+    },
+    "fee": {
+      "title": "Fee",
+      "description": "A tuition fee record for a student.",
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "type": "string"
+        },
+        "studentName": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Paid", "Due", "Overdue"]
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["studentId", "studentName", "class", "amount", "status", "dueDate"]
+    },
+    "hostelFee": {
+      "title": "Hostel Fee",
+      "description": "A hostel fee record for a student.",
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "type": "string"
+        },
+        "studentName": {
+          "type": "string"
+        },
+        "roomNumber": {
+          "type": "string"
+        },
+        "amount": {
+          "type": "number"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Paid", "Due", "Overdue"]
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["studentId", "studentName", "roomNumber", "amount", "status", "dueDate"]
+    },
+    "attendanceRecord": {
+      "title": "Attendance Record",
+      "description": "A single attendance record for a student on a specific date.",
+      "type": "object",
+      "properties": {
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Present", "Absent", "Holiday"]
+        }
+      },
+      "required": ["date", "status"]
+    },
+    "studentAttendance": {
+      "title": "Student Attendance",
+      "description": "A collection of attendance records for a single student.",
+      "type": "object",
+      "properties": {
+        "studentId": {
+          "type": "string"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/entities/attendanceRecord"
+          }
+        }
+      },
+      "required": ["studentId", "records"]
+    },
+    "hostelRoom": {
+      "title": "Hostel Room",
+      "description": "A room in the school hostel.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "roomNumber": {
+          "type": "string"
+        },
+        "capacity": {
+          "type": "number"
+        },
+        "occupants": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["id", "roomNumber", "capacity", "occupants"]
+    },
+    "homework": {
+      "title": "Homework",
+      "description": "A homework assignment for a class.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "class": {
+          "type": "string"
+        },
+        "section": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "dueDate": {
+          "type": "string",
+          "format": "date"
+        },
+        "assignedBy": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "class", "section", "subject", "title", "dueDate"]
+    },
+    "admission": {
+      "title": "Admission",
+      "description": "Monthly admission statistics.",
+      "type": "object",
+      "properties": {
+        "month": {
+          "type": "string"
+        },
+        "admitted": {
+          "type": "number"
+        },
+        "capacity": {
+          "type": "number"
+        }
+      },
+      "required": ["month", "admitted", "capacity"]
+    },
+    "admissionApplication": {
+      "title": "Admission Application",
+      "description": "An application for admission to the school.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "studentName": {
+          "type": "string"
+        },
+        "applyingForGrade": {
+          "type": "string"
+        },
+        "parentName": {
+          "type": "string"
+        },
+        "parentEmail": {
+          "type": "string",
+          "format": "email"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Approved", "Rejected"]
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        },
+        "gender": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "studentName", "applyingForGrade", "parentName", "parentEmail", "status", "date", "gender"]
+    },
+    "jobApplication": {
+      "title": "Job Application",
+      "description": "An application for a job at the school.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "fullName": {
+          "type": "string"
+        },
+        "email": {
+          "type": "string",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "number"
+        },
+        "resume": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Pending", "Accepted", "Rejected"]
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["id", "fullName", "email", "subject", "experience", "status", "date"]
+    },
+    "user": {
+      "title": "User",
+      "description": "A user with login credentials for the ERP system.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["Admin", "Teacher", "Student", "Finance"]
+        },
+        "studentId": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "userId", "password", "role"]
+    },
+    "notice": {
+      "title": "Notice",
+      "description": "An announcement on the notice board.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        },
+        "author": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["Admin", "Teacher"]
+        },
+        "date": {
+          "type": "string",
+          "format": "date"
+        }
+      },
+      "required": ["id", "title", "content", "author", "role", "date"]
+    }
+  },
+  "auth": {
+    "providers": ["anonymous"]
+  },
+  "firestore": {
+    "/students": {
+      "schema": { "$ref": "#/entities/student" },
+      "description": "Collection of all students."
+    },
+    "/teachers": {
+      "schema": { "$ref": "#/entities/teacher" },
+      "description": "Collection of all teachers."
+    },
+    "/fees": {
+      "schema": { "$ref": "#/entities/fee" },
+      "description": "Collection of all tuition fee records."
+    },
+    "/hostelFees": {
+      "schema": { "$ref": "#/entities/hostelFee" },
+      "description": "Collection of all hostel fee records."
+    },
+    "/studentAttendance": {
+      "schema": { "$ref": "#/entities/studentAttendance" },
+      "description": "Collection of attendance data for all students."
+    },
+    "/hostelRooms": {
+      "schema": { "$ref": "#/entities/hostelRoom" },
+      "description": "Collection of all hostel rooms."
+    },
+    "/homeworks": {
+      "schema": { "$ref": "#/entities/homework" },
+      "description": "Collection of all homework assignments."
+    },
+    "/admissions": {
+      "schema": { "$ref": "#/entities/admission" },
+      "description": "Collection of admission statistics."
+    },
+    "/admissionApplications": {
+      "schema": { "$ref": "#/entities/admissionApplication" },
+      "description": "Collection of all admission applications."
+    },
+    "/jobApplications": {
+      "schema": { "$ref": "#/entities/jobApplication" },
+      "description": "Collection of all job applications."
+    },
+    "/users": {
+      "schema": { "$ref": "#/entities/user" },
+      "description": "Collection of all users with login credentials."
+    },
+    "/notices": {
+      "schema": { "$ref": "#/entities/notice" },
+      "description": "Collection of all notices for the notice board."
+    }
+  }
+}
+
+    
