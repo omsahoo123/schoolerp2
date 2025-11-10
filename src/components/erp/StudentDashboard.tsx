@@ -7,11 +7,37 @@ import Homework from "./Homework";
 import { useData } from "@/lib/data-context";
 import FeePayment from "./FeePayment";
 import NoticeBoard from "./NoticeBoard";
+import { Skeleton } from "../ui/skeleton";
 
 export default function StudentDashboard() {
   const { students, studentAttendance, fees, hostelFees } = useData();
   const studentId = sessionStorage.getItem("studentId");
   
+  if (!students || !studentAttendance || !fees || !hostelFees) {
+    return (
+        <div className="space-y-6">
+            <div>
+                <Skeleton className="h-8 w-64 mb-2" />
+                <Skeleton className="h-5 w-80" />
+            </div>
+             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+                <Skeleton className="h-28" />
+            </div>
+             <div className="grid gap-6 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                    <Skeleton className="h-96" />
+                </div>
+                <div className="lg:col-span-1">
+                    <Skeleton className="h-96" />
+                </div>
+            </div>
+        </div>
+    );
+  }
+
   const loggedInStudent = students.find(s => s.id === studentId); 
 
   if (!loggedInStudent) {
