@@ -1,0 +1,64 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Notices are public
+    match /notices/{noticeId} {
+      allow read: if true;
+      allow write: if isSignedIn(); // Or more specific rules, e.g. if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['Admin', 'Teacher'];
+    }
+
+    // Users can read their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth.uid == userId;
+    }
+
+    // Students can read their own data, teachers/admins can read all
+    match /students/{studentId} {
+        allow read, write: if isSignedIn(); // TODO: Implement role-based access
+    }
+
+    match /teachers/{teacherId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /fees/{feeId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /hostelFees/{feeId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /studentAttendance/{studentId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /hostelRooms/{roomId} {
+        allow read, write: if isSignedIn();
+    }
+    
+    match /homeworks/{homeworkId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /admissions/{admissionId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /admissionApplications/{appId} {
+        allow read, write: if isSignedIn();
+    }
+
+    match /jobApplications/{appId} {
+        allow read, write: if isSignedIn();
+    }
+  }
+}
