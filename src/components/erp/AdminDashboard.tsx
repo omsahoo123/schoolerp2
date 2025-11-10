@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,9 +20,17 @@ import NoticeBoard from "./NoticeBoard";
 export default function AdminDashboard() {
     const { students, fees, hostelRooms } = useData();
     const [isCredentialsOpen, setIsCredentialsOpen] = useState(false);
+
+    // Wait for data to load before calculating stats
+    if (!students || !fees || !hostelRooms) {
+        return <div>Loading dashboard...</div>;
+    }
+
     const totalStudents = students.length;
     const feesDue = fees.filter(f => f.status === 'Due' || f.status === 'Overdue').length;
-    const occupancyRate = (hostelRooms.reduce((acc, room) => acc + room.occupants.length, 0) / hostelRooms.reduce((acc, room) => acc + room.capacity, 0) * 100).toFixed(0);
+    const totalCapacity = hostelRooms.reduce((acc, room) => acc + room.capacity, 0);
+    const totalOccupants = hostelRooms.reduce((acc, room) => acc + room.occupants.length, 0);
+    const occupancyRate = totalCapacity > 0 ? ((totalOccupants / totalCapacity) * 100).toFixed(0) : 0;
 
   return (
     <>
