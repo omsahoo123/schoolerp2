@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,9 +33,9 @@ import { useToast } from "@/hooks/use-toast";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Link from "next/link";
 import { Textarea } from "@/components/ui/textarea";
-import { useData } from "@/lib/data-context";
-import { AdmissionApplication } from "@/lib/types";
 import { useRouter } from "next/navigation";
+import { useFirestore } from "@/firebase";
+import { addDoc, collection } from "firebase/firestore";
 
 const admissionFormSchema = z.object({
   studentFirstName: z.string().min(2, "First name must be at least 2 characters."),
@@ -61,8 +62,8 @@ type AdmissionFormValues = z.infer<typeof admissionFormSchema>;
 export default function AdmissionsPage() {
   const { toast } = useToast();
   const heroImage = PlaceHolderImages.find(p => p.id === 'admission-hero');
-  const { setAdmissionApplications } = useData();
   const router = useRouter();
+  const firestore = useFirestore();
 
   const form = useForm<AdmissionFormValues>({
     resolver: zodResolver(admissionFormSchema),
@@ -80,26 +81,41 @@ export default function AdmissionsPage() {
     },
   });
 
-  function onSubmit(data: AdmissionFormValues) {
-    const newApplication: AdmissionApplication = {
-        id: `APP${Date.now()}`,
+  async function onSubmit(data: AdmissionFormValues) {
+    if (!firestore) {
+        toast({ title: "Error", description: "Database not connected.", variant: "destructive" });
+        return;
+    }
+
+    const newApplication = {
         studentName: `${data.studentFirstName} ${data.studentLastName}`,
         parentName: `${data.parentFirstName} ${data.parentLastName}`,
         parentEmail: data.parentEmail,
         applyingForGrade: data.applyingForGrade,
-        status: 'Pending',
+        status: 'Pending' as const,
         date: new Date().toISOString().split('T')[0],
         gender: data.gender,
     };
 
-    setAdmissionApplications(prev => [newApplication, ...prev]);
+    try {
+        const docRef = await addDoc(collection(firestore, "admissionApplications"), newApplication);
+        console.log("Application written with ID: ", docRef.id);
 
-    toast({
-      title: "Application Submitted!",
-      description: `Thank you, ${data.parentFirstName}. Your application for ${data.studentFirstName} has been received and is pending review.`,
-    });
-    form.reset();
-    router.push("/login");
+        toast({
+          title: "Application Submitted!",
+          description: `Thank you, ${data.parentFirstName}. Your application for ${data.studentFirstName} has been received and is pending review.`,
+        });
+        form.reset();
+        router.push("/login");
+
+    } catch(e: any) {
+        console.error("Error adding document: ", e);
+        toast({
+            title: "Submission Failed",
+            description: e.message || "Could not submit your application. Please try again.",
+            variant: "destructive",
+        });
+    }
   }
 
   return (
@@ -269,7 +285,7 @@ export default function AdmissionsPage() {
                 </div>
                 
                 <div className="flex justify-end">
-                    <Button type="submit" size="lg">Submit Application</Button>
+                    <Button type="submit">Submit Application</Button>
                 </div>
               </form>
             </Form>
@@ -279,3 +295,5 @@ export default function AdmissionsPage() {
     </div>
   );
 }
+
+    
