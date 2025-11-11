@@ -76,25 +76,36 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
     const existingStudent = allStudents.find(s => s.name === application.studentName);
 
     if (!existingStudent) {
-        const newStudent = {
+        const newStudentData = {
             name: application.studentName,
             class: application.applyingForGrade,
             section: 'A' as const, // Default section
             rollNumber: String(Math.floor(Math.random() * 100) + 1),
             avatar: studentImages[Math.floor(Math.random() * studentImages.length)].imageUrl,
         };
-        const studentDocRef = await addDoc(collection(firestore, "students"), newStudent);
+        const studentDocRef = await addDoc(collection(firestore, "students"), newStudentData);
         studentId = studentDocRef.id;
 
         const newFee: Omit<Fee, 'id' | 'studentId'> & { studentId: string } = {
             studentId: studentId,
-            studentName: newStudent.name,
-            class: `${newStudent.class}${newStudent.section}`,
+            studentName: newStudentData.name,
+            class: `${newStudentData.class}${newStudentData.section}`,
             amount: 5500,
             status: 'Due' as const,
             dueDate: format(addDays(new Date(), 30), 'yyyy-MM-dd'),
         };
         await addDoc(collection(firestore, "fees"), newFee);
+
+        // Create user credentials for the new student
+        const studentUserId = `STU-${newStudentData.name.split(' ')[0].toUpperCase()}${newStudentData.rollNumber}`;
+        const password = Math.random().toString(36).slice(-8);
+        await addDoc(collection(firestore, "users"), {
+            userId: studentUserId, 
+            password: password, 
+            role: 'Student',
+            studentId: studentId 
+        });
+
     } else {
         studentId = existingStudent.id;
     }
