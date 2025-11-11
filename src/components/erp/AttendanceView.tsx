@@ -61,8 +61,8 @@ export default function AttendanceView({ studentId }: AttendanceViewProps) {
               backgroundColor: 'hsl(var(--destructive))'
             },
             holiday: {
-              color: 'hsl(var(--muted-foreground))',
-              backgroundColor: 'hsl(var(--muted))',
+              color: 'hsl(var(--warning-foreground))',
+              backgroundColor: 'hsl(var(--warning))',
             },
           }}
         />
@@ -76,7 +76,7 @@ export default function AttendanceView({ studentId }: AttendanceViewProps) {
             <span className="text-sm">Absent</span>
           </div>
           <div className="flex items-center space-x-2">
-            <div className="h-4 w-4 rounded-full bg-muted" />
+            <div className="h-4 w-4 rounded-full" style={{backgroundColor: 'hsl(var(--warning))'}} />
             <span className="text-sm">Holiday</span>
           </div>
         </div>
