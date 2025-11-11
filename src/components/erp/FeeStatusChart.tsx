@@ -42,7 +42,7 @@ export default function FeeStatusChart() {
   const { fees } = useData();
 
   const chartData = React.useMemo(() => {
-    const statusCounts = fees.reduce((acc, fee) => {
+    const statusCounts = (fees || []).reduce((acc, fee) => {
       acc[fee.status] = (acc[fee.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
