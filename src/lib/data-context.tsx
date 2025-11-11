@@ -25,21 +25,32 @@ interface DataContextProps {
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
 
-// Function to seed initial admin user
-const seedAdminUser = async (firestore: Firestore) => {
+// Function to seed initial users
+const seedInitialUsers = async (firestore: Firestore) => {
     const usersCollection = collection(firestore, 'users');
+    
+    // Seed Admin User
     const adminQuery = query(usersCollection, where("role", "==", "Admin"));
     const adminSnapshot = await getDocs(adminQuery);
-
     if (adminSnapshot.empty) {
         console.log("No admin user found, creating one...");
         await addDoc(usersCollection, {
             userId: 'admin',
-            password: 'password', // In a real app, this should be handled securely
+            password: 'password',
             role: 'Admin',
         });
-    } else {
-        console.log("Admin user already exists.");
+    }
+
+    // Seed Finance User
+    const financeQuery = query(usersCollection, where("role", "==", "Finance"));
+    const financeSnapshot = await getDocs(financeQuery);
+    if (financeSnapshot.empty) {
+        console.log("No finance user found, creating one...");
+        await addDoc(usersCollection, {
+            userId: 'finance',
+            password: 'password',
+            role: 'Finance',
+        });
     }
 };
 
@@ -61,7 +72,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     if (firestore) {
-      seedAdminUser(firestore);
+      seedInitialUsers(firestore);
     }
   }, [firestore]);
 

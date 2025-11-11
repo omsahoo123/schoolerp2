@@ -11,11 +11,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import FeeStatusChart from "./FeeStatusChart";
 import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
-import HostelChart from "./HostelChart";
 import { useState } from "react";
 import { Fee } from "@/lib/types";
 import EditFeeDialog from "./EditFeeDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
+import HostelManagement from "./HostelManagement";
 
 export default function FinanceDashboard() {
   const { fees, hostelFees } = useData();
@@ -185,9 +185,9 @@ export default function FinanceDashboard() {
             <FeeStatusChart />
         </div>
       </div>
-       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <HostelChart />
-        </div>
+      <div className="grid grid-cols-1 gap-6">
+        <HostelManagement />
+      </div>
     </div>
     {selectedFee && (
         <EditFeeDialog
