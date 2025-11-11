@@ -14,17 +14,22 @@ import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from "@/firebase";
 import { addDoc, collection, deleteDoc, doc, updateDoc, writeBatch } from "firebase/firestore";
-import { Hostel, HostelRoom } from "@/lib/types";
+import { AdmissionApplication, Hostel, HostelRoom } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea } from "../ui/scroll-area";
+import HostelAllocationDialog from "./HostelAllocationDialog";
 
 export default function HostelManagement() {
-  const { hostels, hostelRooms } = useData();
+  const { hostels, hostelRooms, students } = useData();
   const [isRoomDialogOpen, setIsRoomDialogOpen] = useState(false);
   const [isHostelDialogOpen, setIsHostelDialogOpen] = useState(false);
+  const [isAllocationDialogOpen, setIsAllocationDialogOpen] = useState(false);
+  
   const [editingRoom, setEditingRoom] = useState<HostelRoom | null>(null);
   const [editingHostel, setEditingHostel] = useState<Hostel | null>(null);
+  const [selectedApplication, setSelectedApplication] = useState<AdmissionApplication | null>(null);
+
   const { toast } = useToast();
   const firestore = useFirestore();
 
@@ -172,6 +177,44 @@ export default function HostelManagement() {
       hostelName: room.hostelName
   }))) || [];
 
+  const handleEditOccupant = (occupant: {studentName: string}) => {
+    const student = students?.find(s => s.name === occupant.studentName);
+    if (student) {
+        // Create a fake application object to pass to the dialog
+        const application: AdmissionApplication = {
+            id: student.id,
+            studentName: student.name,
+            gender: 'N/A', // Gender may not be available on student, can be improved
+            applyingForGrade: student.class,
+            parentName: 'N/A',
+            parentEmail: 'N/A',
+            status: 'Approved',
+            date: new Date().toISOString()
+        }
+        setSelectedApplication(application);
+        setIsAllocationDialogOpen(true);
+    } else {
+        toast({title: "Error", description: "Could not find student details to edit.", variant: "destructive"});
+    }
+  };
+
+  const handleDeleteOccupant = async (occupant: { studentName: string; roomNumber: string; hostelName: string }) => {
+    if (!firestore || !hostelRooms) return;
+    if (confirm(`Are you sure you want to remove ${occupant.studentName} from this room?`)) {
+        const room = hostelRooms.find(r => r.roomNumber === occupant.roomNumber && r.hostelName === occupant.hostelName);
+        if (room) {
+            const roomDocRef = doc(firestore, "hostelRooms", room.id);
+            const updatedOccupants = room.occupants.filter(name => name !== occupant.studentName);
+            await updateDoc(roomDocRef, { occupants: updatedOccupants });
+            toast({
+                title: "Occupant Removed",
+                description: `${occupant.studentName} has been removed from room ${occupant.roomNumber}.`
+            });
+        }
+    }
+  };
+
+
   return (
     <>
       <Card>
@@ -293,6 +336,7 @@ export default function HostelManagement() {
                                 <TableHead>Student Name</TableHead>
                                 <TableHead>Hostel</TableHead>
                                 <TableHead>Room No.</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -302,11 +346,19 @@ export default function HostelManagement() {
                                         <TableCell className="font-medium">{occ.studentName}</TableCell>
                                         <TableCell>{occ.hostelName}</TableCell>
                                         <TableCell>{occ.roomNumber}</TableCell>
+                                        <TableCell className="text-right space-x-2">
+                                            <Button variant="ghost" size="icon" onClick={() => handleEditOccupant(occ)}>
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
+                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteOccupant(occ)} className="text-destructive hover:text-destructive">
+                                                <Trash className="h-4 w-4" />
+                                            </Button>
+                                        </TableCell>
                                     </TableRow>
                                 ))
                             ) : (
                                 <TableRow>
-                                    <TableCell colSpan={3} className="h-24 text-center">No students are currently in the hostel.</TableCell>
+                                    <TableCell colSpan={4} className="h-24 text-center">No students are currently in the hostel.</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>
@@ -391,6 +443,15 @@ export default function HostelManagement() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <HostelAllocationDialog
+        open={isAllocationDialogOpen}
+        onOpenChange={setIsAllocationDialogOpen}
+        application={selectedApplication}
+        onAllocationSuccess={() => {}}
+      />
     </>
   );
 }
+
+    
