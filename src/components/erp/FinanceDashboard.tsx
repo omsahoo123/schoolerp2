@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useToast } from "@/hooks/use-toast";
@@ -12,7 +11,7 @@ import FeeStatusChart from "./FeeStatusChart";
 import KpiCard from "./KpiCard";
 import { useData } from "@/lib/data-context";
 import { useState } from "react";
-import { Fee } from "@/lib/types";
+import { Fee, HostelFee } from "@/lib/types";
 import EditFeeDialog from "./EditFeeDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import HostelManagement from "./HostelManagement";
@@ -21,7 +20,8 @@ export default function FinanceDashboard() {
   const { fees, hostelFees } = useData();
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedFee, setSelectedFee] = useState<Fee | null>(null);
+  const [selectedFee, setSelectedFee] = useState<Fee | HostelFee | null>(null);
+  const [selectedFeeType, setSelectedFeeType] = useState<'tuition' | 'hostel' | null>(null);
 
   const totalFees = fees?.reduce((sum, fee) => sum + fee.amount, 0) || 0;
   const paidFees = fees?.filter(f => f.status === 'Paid').reduce((sum, fee) => sum + fee.amount, 0) || 0;
@@ -35,8 +35,9 @@ export default function FinanceDashboard() {
     });
   };
 
-  const handleEditClick = (fee: Fee) => {
+  const handleEditClick = (fee: Fee | HostelFee, type: 'tuition' | 'hostel') => {
     setSelectedFee(fee);
+    setSelectedFeeType(type);
     setIsEditDialogOpen(true);
   };
 
@@ -97,7 +98,7 @@ export default function FinanceDashboard() {
                                 </TableHeader>
                                 <TableBody>
                                 {fees?.map((fee) => (
-                                    <TableRow key={fee.studentId}>
+                                    <TableRow key={fee.id}>
                                     <TableCell className="font-medium">{fee.studentName}</TableCell>
                                     <TableCell>{fee.class}</TableCell>
                                     <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
@@ -110,7 +111,7 @@ export default function FinanceDashboard() {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          onClick={() => handleEditClick(fee)}
+                                          onClick={() => handleEditClick(fee, 'tuition')}
                                           disabled={fee.status === 'Paid'}
                                         >
                                           <Edit className="h-4 w-4" />
@@ -144,7 +145,7 @@ export default function FinanceDashboard() {
                                 </TableHeader>
                                 <TableBody>
                                 {hostelFees?.map((fee) => (
-                                    <TableRow key={fee.studentId}>
+                                    <TableRow key={fee.id}>
                                     <TableCell className="font-medium">{fee.studentName}</TableCell>
                                     <TableCell>{fee.roomNumber}</TableCell>
                                     <TableCell>₹{fee.amount.toLocaleString()}</TableCell>
@@ -157,7 +158,7 @@ export default function FinanceDashboard() {
                                         <Button
                                           variant="ghost"
                                           size="icon"
-                                          // onClick={() => handleEditClick(fee)} // TODO: Implement edit for hostel fee
+                                          onClick={() => handleEditClick(fee, 'hostel')}
                                           disabled={fee.status === 'Paid'}
                                         >
                                           <Edit className="h-4 w-4" />
@@ -189,11 +190,12 @@ export default function FinanceDashboard() {
         <HostelManagement />
       </div>
     </div>
-    {selectedFee && (
+    {selectedFee && selectedFeeType && (
         <EditFeeDialog
             open={isEditDialogOpen}
             onOpenChange={setIsEditDialogOpen}
             fee={selectedFee}
+            feeType={selectedFeeType}
         />
     )}
     </>
