@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { BedDouble, Edit, PlusCircle, Trash, Users } from "lucide-react";
+import { BedDouble, Edit, PlusCircle, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,7 +46,8 @@ export default function HostelManagement() {
   const handleDeleteRoom = async (roomId: string) => {
     if (!firestore) return;
     if (confirm("Are you sure you want to delete this room? This action cannot be undone.")) {
-        await deleteDoc(doc(firestore, "hostelRooms", roomId));
+        const roomDocRef = doc(firestore, "hostelRooms", roomId);
+        await deleteDoc(roomDocRef);
         toast({
             title: "Room Deleted",
             description: `The room has been successfully deleted.`,
@@ -112,26 +113,35 @@ export default function HostelManagement() {
   const handleDeleteHostel = async (hostel: Hostel) => {
     if (!firestore) return;
     if (confirm(`Are you sure you want to delete ${hostel.name}? This will also delete all rooms associated with it.`)) {
-        const batch = writeBatch(firestore);
-        
-        // Delete the hostel
-        const hostelDocRef = doc(firestore, "hostels", hostel.id);
-        batch.delete(hostelDocRef);
+        try {
+            const batch = writeBatch(firestore);
+            
+            // Delete the hostel document
+            const hostelDocRef = doc(firestore, "hostels", hostel.id);
+            batch.delete(hostelDocRef);
 
-        // Query for rooms to delete
-        const roomsQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", hostel.id));
-        const roomsSnapshot = await getDocs(roomsQuery);
-        roomsSnapshot.forEach(roomDoc => {
-            batch.delete(roomDoc.ref);
-        });
+            // Query for rooms to delete
+            const roomsQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", hostel.id));
+            const roomsSnapshot = await getDocs(roomsQuery);
+            roomsSnapshot.forEach(roomDoc => {
+                batch.delete(roomDoc.ref);
+            });
 
-        await batch.commit();
+            await batch.commit();
 
-        toast({
-            title: "Hostel Deleted",
-            description: `${hostel.name} and all its rooms have been deleted.`,
-            variant: "destructive"
-        });
+            toast({
+                title: "Hostel Deleted",
+                description: `${hostel.name} and all its rooms have been deleted.`,
+                variant: "destructive"
+            });
+        } catch (error) {
+            console.error("Error deleting hostel:", error);
+            toast({
+                title: "Error",
+                description: "Could not delete the hostel. Please try again.",
+                variant: "destructive"
+            });
+        }
     }
   };
 
@@ -207,23 +217,33 @@ export default function HostelManagement() {
             where("hostelName", "==", occupant.hostelName)
         );
 
-        const querySnapshot = await getDocs(roomQuery);
-        if (querySnapshot.empty) {
-            toast({ title: "Error", description: "Could not find the room to update.", variant: "destructive" });
-            return;
-        }
+        try {
+            const querySnapshot = await getDocs(roomQuery);
+            if (querySnapshot.empty) {
+                toast({ title: "Error", description: "Could not find the room to update.", variant: "destructive" });
+                return;
+            }
 
-        const roomDoc = querySnapshot.docs[0];
-        const roomData = roomDoc.data() as HostelRoom;
-        
-        const roomDocRef = doc(firestore, "hostelRooms", roomDoc.id);
-        const updatedOccupants = roomData.occupants.filter(name => name !== occupant.studentName);
-        await updateDoc(roomDocRef, { occupants: updatedOccupants });
-        
-        toast({
-            title: "Occupant Removed",
-            description: `${occupant.studentName} has been removed from room ${occupant.roomNumber}.`
-        });
+            const roomDoc = querySnapshot.docs[0];
+            const roomData = roomDoc.data() as HostelRoom;
+            
+            const roomDocRef = doc(firestore, "hostelRooms", roomDoc.id);
+            const updatedOccupants = roomData.occupants.filter(name => name !== occupant.studentName);
+            
+            await updateDoc(roomDocRef, { occupants: updatedOccupants });
+            
+            toast({
+                title: "Occupant Removed",
+                description: `${occupant.studentName} has been removed from room ${occupant.roomNumber}.`
+            });
+        } catch (error) {
+             console.error("Error removing occupant:", error);
+            toast({
+                title: "Error",
+                description: "Could not remove occupant. Please try again.",
+                variant: "destructive"
+            });
+        }
     }
   };
 
