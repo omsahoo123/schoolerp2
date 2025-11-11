@@ -46,14 +46,15 @@ export default function HostelManagement() {
 
   const handleDeleteRoom = async (roomId: string) => {
     if (!firestore) return;
-    if (confirm("Are you sure you want to delete this room? This action cannot be undone.")) {
-        const roomDocRef = doc(firestore, "hostelRooms", roomId);
-        await deleteDoc(roomDocRef);
+    try {
+        await deleteDoc(doc(firestore, "hostelRooms", roomId));
         toast({
             title: "Room Deleted",
             description: `The room has been successfully deleted.`,
             variant: "destructive"
         });
+    } catch(e) {
+        toast({ title: "Error", description: "Could not delete room.", variant: "destructive" });
     }
   };
 
@@ -70,7 +71,6 @@ export default function HostelManagement() {
         return;
     }
     
-    // Check for duplicate room number within the same hostel
     const isDuplicate = hostelRooms.some(
         room => room.hostelId === hostelId && room.roomNumber === roomNumber && room.id !== editingRoom?.id
     );
@@ -99,12 +99,10 @@ export default function HostelManagement() {
     };
 
     if (editingRoom) {
-      // Update existing room
       const roomDocRef = doc(firestore, "hostelRooms", editingRoom.id);
       await updateDoc(roomDocRef, roomData);
       toast({ title: "Room Updated", description: `Room ${roomNumber} has been updated.` });
     } else {
-      // Add new room
       await addDoc(collection(firestore, "hostelRooms"), { 
           ...roomData,
           occupants: [] 
@@ -128,36 +126,32 @@ export default function HostelManagement() {
 
   const handleDeleteHostel = async (hostel: Hostel) => {
     if (!firestore) return;
-    if (confirm(`Are you sure you want to delete ${hostel.name}? This will also delete all rooms associated with it.`)) {
-        try {
-            const batch = writeBatch(firestore);
-            
-            // Delete the hostel document
-            const hostelDocRef = doc(firestore, "hostels", hostel.id);
-            batch.delete(hostelDocRef);
+    try {
+        const batch = writeBatch(firestore);
+        
+        const hostelDocRef = doc(firestore, "hostels", hostel.id);
+        batch.delete(hostelDocRef);
 
-            // Query for rooms to delete
-            const roomsQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", hostel.id));
-            const roomsSnapshot = await getDocs(roomsQuery);
-            roomsSnapshot.forEach(roomDoc => {
-                batch.delete(roomDoc.ref);
-            });
+        const roomsQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", hostel.id));
+        const roomsSnapshot = await getDocs(roomsQuery);
+        roomsSnapshot.forEach(roomDoc => {
+            batch.delete(roomDoc.ref);
+        });
 
-            await batch.commit();
+        await batch.commit();
 
-            toast({
-                title: "Hostel Deleted",
-                description: `${hostel.name} and all its rooms have been deleted.`,
-                variant: "destructive"
-            });
-        } catch (error) {
-            console.error("Error deleting hostel:", error);
-            toast({
-                title: "Error",
-                description: "Could not delete the hostel. Please try again.",
-                variant: "destructive"
-            });
-        }
+        toast({
+            title: "Hostel Deleted",
+            description: `${hostel.name} and all its rooms have been deleted.`,
+            variant: "destructive"
+        });
+    } catch (error) {
+        console.error("Error deleting hostel:", error);
+        toast({
+            title: "Error",
+            description: "Could not delete the hostel. Please try again.",
+            variant: "destructive"
+        });
     }
   };
 
@@ -173,7 +167,6 @@ export default function HostelManagement() {
         return;
     }
     
-    // Check for duplicate hostel name
     const isDuplicate = hostels.some(
         hostel => hostel.name.toLowerCase() === name.toLowerCase() && hostel.id !== editingHostel?.id
     );
@@ -239,7 +232,6 @@ export default function HostelManagement() {
 
   const handleDeleteOccupant = async (occupant: { studentName: string; roomNumber: string; hostelName: string }) => {
     if (!firestore) return;
-    if (confirm(`Are you sure you want to remove ${occupant.studentName} from this room?`)) {
         const roomQuery = query(
             collection(firestore, "hostelRooms"),
             where("roomNumber", "==", occupant.roomNumber),
@@ -273,7 +265,6 @@ export default function HostelManagement() {
                 variant: "destructive"
             });
         }
-    }
   };
 
   const handleDeleteAllRooms = async () => {
@@ -381,9 +372,25 @@ export default function HostelManagement() {
                             <Button variant="ghost" size="icon" onClick={() => handleEditRoom(room)}>
                                 <Edit className="h-4 w-4" />
                             </Button>
-                            <Button variant="ghost" size="icon" onClick={() => handleDeleteRoom(room.id)} className="text-destructive hover:text-destructive">
-                                <Trash className="h-4 w-4" />
-                            </Button>
+                             <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                        <Trash className="h-4 w-4" />
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                    <AlertDialogTitle>Delete Room?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Are you sure you want to delete Room {room.roomNumber}? This cannot be undone.
+                                    </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                    <AlertDialogAction onClick={() => handleDeleteRoom(room.id)}>Delete</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                           </TableCell>
                         </TableRow>
                       ))
@@ -441,9 +448,25 @@ export default function HostelManagement() {
                                             <Button variant="ghost" size="icon" onClick={() => handleEditHostel(hostel)}>
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteHostel(hostel)} className="text-destructive hover:text-destructive">
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>Delete {hostel.name}?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        This will also delete all rooms inside this hostel. This action cannot be undone.
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteHostel(hostel)}>Delete</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </TableCell>
                                     </TableRow>
                                 ))
@@ -479,9 +502,25 @@ export default function HostelManagement() {
                                             <Button variant="ghost" size="icon" onClick={() => handleEditOccupant(occ)}>
                                                 <Edit className="h-4 w-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDeleteOccupant(occ)} className="text-destructive hover:text-destructive">
-                                                <Trash className="h-4 w-4" />
-                                            </Button>
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
+                                                        <Trash className="h-4 w-4" />
+                                                    </Button>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                    <AlertDialogTitle>Remove Occupant?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Are you sure you want to remove {occ.studentName} from this room?
+                                                    </AlertDialogDescription>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogFooter>
+                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteOccupant(occ)}>Remove</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
                                         </TableCell>
                                     </TableRow>
                                 ))
