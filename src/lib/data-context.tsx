@@ -5,7 +5,7 @@ import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useCollection } from '@/firebase';
 import { collection, addDoc, getDocs, query, where, Firestore } from 'firebase/firestore';
 import { useFirestore } from '@/firebase/provider';
-import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication, Notice } from './types';
+import { Student, Fee, StudentAttendance, HostelRoom, Homework, Admission, User, Teacher, AdmissionApplication, HostelFee, JobApplication, Notice, Hostel } from './types';
 
 // Define the shape of our context
 interface DataContextProps {
@@ -14,6 +14,7 @@ interface DataContextProps {
   fees: Fee[] | null;
   hostelFees: HostelFee[] | null;
   studentAttendance: StudentAttendance[] | null;
+  hostels: Hostel[] | null;
   hostelRooms: HostelRoom[] | null;
   homeworks: Homework[] | null;
   admissions: Admission[] | null;
@@ -62,6 +63,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
   const { data: fees } = useCollection<Fee>('fees');
   const { data: hostelFees } = useCollection<HostelFee>('hostelFees');
   const { data: studentAttendance } = useCollection<StudentAttendance>('studentAttendance');
+  const { data: hostels } = useCollection<Hostel>('hostels');
   const { data: hostelRooms } = useCollection<HostelRoom>('hostelRooms');
   const { data: homeworks } = useCollection<Homework>('homeworks');
   const { data: admissions } = useCollection<Admission>('admissions');
@@ -82,6 +84,7 @@ export const DataProvider = ({ children }: { children: ReactNode }) => {
     fees,
     hostelFees,
     studentAttendance,
+    hostels,
     hostelRooms,
     homeworks,
     admissions,

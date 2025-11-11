@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useData } from "@/lib/data-context";
-import { AdmissionApplication, Student, Fee, HostelFee } from "@/lib/types";
-import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { AdmissionApplication, Student, Fee, HostelFee, Hostel } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { addDays, format } from "date-fns";
 import { useFirestore } from "@/firebase";
@@ -37,52 +36,33 @@ type HostelAllocationDialogProps = {
 
 const studentImages = PlaceHolderImages.filter(p => p.id.startsWith('student-avatar'));
 
-const hostelTypes = {
-  'Boys': ['Boys Hostel A', 'Boys Hostel B'],
-  'Girls': ['Girls Hostel A', 'Girls Hostel B']
-};
-
 export default function HostelAllocationDialog({ open, onOpenChange, application, onAllocationSuccess }: HostelAllocationDialogProps) {
-  const { hostelRooms, students: allStudents } = useData();
+  const { hostels, hostelRooms, students: allStudents } = useData();
   const { toast } = useToast();
   const firestore = useFirestore();
 
-  const [selectedHostelType, setSelectedHostelType] = useState<'Boys' | 'Girls' | ''>('');
   const [selectedHostel, setSelectedHostel] = useState('');
   const [selectedRoom, setSelectedRoom] = useState('');
 
-  // Effect to initialize hostel type based on application gender and reset on close/application change
+  // Effect to reset selections when dialog opens for a new application
   useEffect(() => {
-    if (open && application) {
-      if (application.gender?.toLowerCase() === 'male') {
-        setSelectedHostelType('Boys');
-      } else if (application.gender?.toLowerCase() === 'female') {
-        setSelectedHostelType('Girls');
-      } else {
-        setSelectedHostelType('');
-      }
-      // Reset selections when dialog opens for a new application
+    if (open) {
       setSelectedHostel('');
       setSelectedRoom('');
     }
   }, [application, open]);
   
-  const handleHostelTypeChange = (value: 'Boys' | 'Girls' | '') => {
-    setSelectedHostelType(value);
-    setSelectedHostel('');
-    setSelectedRoom('');
-  }
-
+  const applicantGender = application?.gender?.toLowerCase();
   const availableHostels = useMemo(() => {
-    if (!selectedHostelType) return [];
-    return hostelTypes[selectedHostelType] || [];
-  }, [selectedHostelType]);
+    if (!hostels || !applicantGender) return [];
+    const genderToType = applicantGender === 'male' ? 'Boys' : 'Girls';
+    return hostels.filter(h => h.type === genderToType);
+  }, [hostels, applicantGender]);
   
   const availableRooms = useMemo(() => {
     if (!selectedHostel || !hostelRooms) return [];
-    // This is a simplified logic. In a real app, you'd filter rooms by hostel name as well.
     return hostelRooms
-      .filter(room => room.occupants.length < room.capacity)
+      .filter(room => room.hostelId === selectedHostel && room.occupants.length < room.capacity)
       .map(room => room.roomNumber);
   }, [selectedHostel, hostelRooms]);
 
@@ -106,7 +86,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         const studentDocRef = await addDoc(collection(firestore, "students"), newStudent);
         studentId = studentDocRef.id;
 
-        const newFee: Omit<Fee, 'studentId'> & { studentId: string } = {
+        const newFee: Omit<Fee, 'id' | 'studentId'> & { studentId: string } = {
             studentId: studentId,
             studentName: newStudent.name,
             class: `${newStudent.class}${newStudent.section}`,
@@ -119,7 +99,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
         studentId = existingStudent.id;
     }
 
-    const roomToUpdate = hostelRooms?.find(r => r.roomNumber === selectedRoom);
+    const roomToUpdate = hostelRooms?.find(r => r.roomNumber === selectedRoom && r.hostelId === selectedHostel);
     if (roomToUpdate) {
         const roomDocRef = doc(firestore, "hostelRooms", roomToUpdate.id);
         await updateDoc(roomDocRef, {
@@ -128,7 +108,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
     }
 
     // Create a new hostel fee record
-    const newHostelFee = {
+    const newHostelFee: Omit<HostelFee, 'id' | 'studentId'> & { studentId: string } = {
         studentId: studentId,
         studentName: application.studentName,
         roomNumber: selectedRoom,
@@ -151,45 +131,29 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
     onOpenChange(false);
   }
 
-  const applicantGender = application?.gender?.toLowerCase();
-
   return (
     <Dialog open={open} onOpenChange={resetAndClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-headline">Hostel Allocation</DialogTitle>
           <DialogDescription>
-            Allocate a hostel room for {application?.studentName}.
+            Allocate a hostel room for {application?.studentName} (Gender: {application?.gender}).
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Hostel Type</Label>
-            <RadioGroup value={selectedHostelType} onValueChange={(value) => handleHostelTypeChange(value as 'Boys' | 'Girls')}>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Boys" id="boys" disabled={applicantGender !== 'male'} />
-                <Label htmlFor="boys">Boys Hostel</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="Girls" id="girls" disabled={applicantGender !== 'female'} />
-                <Label htmlFor="girls">Girls Hostel</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="hostel-name">Hostel Name</Label>
+           <div className="space-y-2">
+            <Label htmlFor="hostel-name">Hostel</Label>
             <Select 
                 value={selectedHostel} 
                 onValueChange={setSelectedHostel} 
-                disabled={!selectedHostelType}
+                disabled={availableHostels.length === 0}
             >
               <SelectTrigger id="hostel-name">
-                <SelectValue placeholder="Select hostel" />
+                <SelectValue placeholder={availableHostels.length > 0 ? "Select hostel" : "No suitable hostels found"} />
               </SelectTrigger>
               <SelectContent>
                 {availableHostels.map(hostel => (
-                  <SelectItem key={hostel} value={hostel}>{hostel}</SelectItem>
+                  <SelectItem key={hostel.id} value={hostel.id}>{hostel.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -212,7 +176,7 @@ export default function HostelAllocationDialog({ open, onOpenChange, application
               </SelectContent>
             </Select>
             {(availableRooms || []).length === 0 && selectedHostel && (
-                <p className="text-xs text-destructive">No rooms available in this hostel.</p>
+                <p className="text-xs text-destructive">No available rooms in this hostel.</p>
             )}
           </div>
         </div>

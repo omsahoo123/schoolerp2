@@ -142,12 +142,36 @@
       },
       "required": ["studentId", "records"]
     },
+    "hostel": {
+      "title": "Hostel",
+      "description": "A hostel building.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Boys", "Girls"]
+        }
+      },
+      "required": ["id", "name", "type"]
+    },
     "hostelRoom": {
       "title": "Hostel Room",
       "description": "A room in the school hostel.",
       "type": "object",
       "properties": {
         "id": {
+          "type": "string"
+        },
+        "hostelId": {
+          "type": "string"
+        },
+        "hostelName": {
           "type": "string"
         },
         "roomNumber": {
@@ -163,7 +187,7 @@
           }
         }
       },
-      "required": ["id", "roomNumber", "capacity", "occupants"]
+      "required": ["id", "hostelId", "hostelName", "roomNumber", "capacity", "occupants"]
     },
     "homework": {
       "title": "Homework",
@@ -365,6 +389,10 @@
       "schema": { "$ref": "#/entities/studentAttendance" },
       "description": "Collection of attendance data for all students."
     },
+    "/hostels": {
+        "schema": { "$ref": "#/entities/hostel" },
+        "description": "Collection of all hostel buildings."
+    },
     "/hostelRooms": {
       "schema": { "$ref": "#/entities/hostelRoom" },
       "description": "Collection of all hostel rooms."
@@ -395,5 +423,3 @@
     }
   }
 }
-
-    

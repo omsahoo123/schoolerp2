@@ -49,8 +49,16 @@ export interface StudentAttendance {
   records: AttendanceRecord[];
 }
 
+export interface Hostel {
+  id: string;
+  name: string;
+  type: 'Boys' | 'Girls';
+}
+
 export interface HostelRoom {
   id: string;
+  hostelId: string;
+  hostelName: string;
   roomNumber: string;
   capacity: number;
   occupants: string[];
