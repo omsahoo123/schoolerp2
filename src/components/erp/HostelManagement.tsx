@@ -59,7 +59,7 @@ export default function HostelManagement() {
 
   const handleSaveRoom = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !hostelRooms) return;
     const formData = new FormData(event.currentTarget);
     const roomNumber = formData.get("roomNumber") as string;
     const capacity = parseInt(formData.get("capacity") as string, 10);
@@ -69,6 +69,21 @@ export default function HostelManagement() {
         toast({ title: "Invalid Input", description: "Please provide a valid room number, capacity and select a hostel.", variant: "destructive" });
         return;
     }
+    
+    // Check for duplicate room number within the same hostel
+    const isDuplicate = hostelRooms.some(
+        room => room.hostelId === hostelId && room.roomNumber === roomNumber && room.id !== editingRoom?.id
+    );
+
+    if (isDuplicate) {
+        toast({
+            title: "Duplicate Room Number",
+            description: `Room number ${roomNumber} already exists in this hostel.`,
+            variant: "destructive"
+        });
+        return;
+    }
+
 
     const selectedHostel = hostels?.find(h => h.id === hostelId);
     if (!selectedHostel) {
@@ -148,7 +163,7 @@ export default function HostelManagement() {
 
   const handleSaveHostel = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!firestore) return;
+    if (!firestore || !hostels) return;
     const formData = new FormData(event.currentTarget);
     const name = formData.get("hostelName") as string;
     const type = formData.get("hostelType") as 'Boys' | 'Girls';
@@ -157,6 +172,21 @@ export default function HostelManagement() {
         toast({ title: "Invalid Input", description: "Please provide a valid name and type.", variant: "destructive" });
         return;
     }
+    
+    // Check for duplicate hostel name
+    const isDuplicate = hostels.some(
+        hostel => hostel.name.toLowerCase() === name.toLowerCase() && hostel.id !== editingHostel?.id
+    );
+
+    if (isDuplicate) {
+        toast({
+            title: "Duplicate Hostel Name",
+            description: `A hostel with the name "${name}" already exists.`,
+            variant: "destructive"
+        });
+        return;
+    }
+
 
     if (editingHostel) {
       const hostelDocRef = doc(firestore, "hostels", editingHostel.id);
