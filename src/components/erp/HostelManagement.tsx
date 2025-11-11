@@ -13,7 +13,7 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useFirestore } from "@/firebase";
-import { addDoc, collection, deleteDoc, doc, updateDoc, writeBatch } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where, writeBatch } from "firebase/firestore";
 import { AdmissionApplication, Hostel, HostelRoom } from "@/lib/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
@@ -118,11 +118,11 @@ export default function HostelManagement() {
         const hostelDocRef = doc(firestore, "hostels", hostel.id);
         batch.delete(hostelDocRef);
 
-        // Delete all rooms in that hostel
-        const roomsToDelete = hostelRooms?.filter(room => room.hostelId === hostel.id) || [];
-        roomsToDelete.forEach(room => {
-            const roomDocRef = doc(firestore, "hostelRooms", room.id);
-            batch.delete(roomDocRef);
+        // Query for rooms to delete
+        const roomsQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", hostel.id));
+        const roomsSnapshot = await getDocs(roomsQuery);
+        roomsSnapshot.forEach(roomDoc => {
+            batch.delete(roomDoc.ref);
         });
 
         await batch.commit();
@@ -154,10 +154,10 @@ export default function HostelManagement() {
       // Also update hostelName in all associated rooms
       if (editingHostel.name !== name) {
           const batch = writeBatch(firestore);
-          const roomsToUpdate = hostelRooms?.filter(room => room.hostelId === editingHostel.id) || [];
-          roomsToUpdate.forEach(room => {
-              const roomDocRef = doc(firestore, "hostelRooms", room.id);
-              batch.update(roomDocRef, { hostelName: name });
+          const roomsToUpdateQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", editingHostel.id));
+          const roomsSnapshot = await getDocs(roomsToUpdateQuery);
+          roomsSnapshot.forEach(roomDoc => {
+              batch.update(roomDoc.ref, { hostelName: name });
           });
           await batch.commit();
       }
@@ -199,18 +199,31 @@ export default function HostelManagement() {
   };
 
   const handleDeleteOccupant = async (occupant: { studentName: string; roomNumber: string; hostelName: string }) => {
-    if (!firestore || !hostelRooms) return;
+    if (!firestore) return;
     if (confirm(`Are you sure you want to remove ${occupant.studentName} from this room?`)) {
-        const room = hostelRooms.find(r => r.roomNumber === occupant.roomNumber && r.hostelName === occupant.hostelName);
-        if (room) {
-            const roomDocRef = doc(firestore, "hostelRooms", room.id);
-            const updatedOccupants = room.occupants.filter(name => name !== occupant.studentName);
-            await updateDoc(roomDocRef, { occupants: updatedOccupants });
-            toast({
-                title: "Occupant Removed",
-                description: `${occupant.studentName} has been removed from room ${occupant.roomNumber}.`
-            });
+        const roomQuery = query(
+            collection(firestore, "hostelRooms"),
+            where("roomNumber", "==", occupant.roomNumber),
+            where("hostelName", "==", occupant.hostelName)
+        );
+
+        const querySnapshot = await getDocs(roomQuery);
+        if (querySnapshot.empty) {
+            toast({ title: "Error", description: "Could not find the room to update.", variant: "destructive" });
+            return;
         }
+
+        const roomDoc = querySnapshot.docs[0];
+        const roomData = roomDoc.data() as HostelRoom;
+        
+        const roomDocRef = doc(firestore, "hostelRooms", roomDoc.id);
+        const updatedOccupants = roomData.occupants.filter(name => name !== occupant.studentName);
+        await updateDoc(roomDocRef, { occupants: updatedOccupants });
+        
+        toast({
+            title: "Occupant Removed",
+            description: `${occupant.studentName} has been removed from room ${occupant.roomNumber}.`
+        });
     }
   };
 
