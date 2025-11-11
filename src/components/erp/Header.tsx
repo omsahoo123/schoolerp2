@@ -1,14 +1,12 @@
+
 "use client";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Bell,
-  GraduationCap,
   Menu,
   School,
-  Search,
-  UserCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,7 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Sheet,
   SheetContent,
@@ -28,6 +25,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
+import { useData } from "@/lib/data-context";
 
 type NavLink = {
     href: string;
@@ -53,11 +51,28 @@ const navLinksByRole: Record<string, NavLink[]> = {
 export default function Header() {
   const router = useRouter();
   const { toast } = useToast();
+  const { students } = useData();
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [avatarUrl, setAvatarUrl] = useState("https://picsum.photos/seed/110/100/100");
+  const [avatarFallback, setAvatarFallback] = useState("AD");
 
   useEffect(() => {
-    setUserRole(sessionStorage.getItem("userRole"));
-  }, []);
+    const role = sessionStorage.getItem("userRole");
+    setUserRole(role);
+
+    if (role === 'Student') {
+        const studentId = sessionStorage.getItem("studentId");
+        if (studentId && students) {
+            const student = students.find(s => s.id === studentId);
+            if (student) {
+                setAvatarUrl(student.avatar);
+                setAvatarFallback(student.name.charAt(0).toUpperCase());
+            }
+        }
+    } else if (role) {
+        setAvatarFallback(role.charAt(0).toUpperCase());
+    }
+  }, [students]);
 
   const handleLogout = () => {
     sessionStorage.removeItem("authenticated");
@@ -122,8 +137,8 @@ export default function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="icon" className="rounded-full">
                   <Avatar>
-                    <AvatarImage src="https://picsum.photos/seed/110/100/100" alt="User" data-ai-hint="user avatar" />
-                    <AvatarFallback>AD</AvatarFallback>
+                    <AvatarImage src={avatarUrl} alt="User Avatar" data-ai-hint="user avatar" />
+                    <AvatarFallback>{avatarFallback}</AvatarFallback>
                   </Avatar>
                   <span className="sr-only">Toggle user menu</span>
                 </Button>
