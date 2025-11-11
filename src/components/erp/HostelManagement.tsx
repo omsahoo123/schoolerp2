@@ -19,6 +19,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { ScrollArea } from "../ui/scroll-area";
 import HostelAllocationDialog from "./HostelAllocationDialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog";
 
 export default function HostelManagement() {
   const { hostels, hostelRooms, students } = useData();
@@ -161,7 +162,6 @@ export default function HostelManagement() {
       const hostelDocRef = doc(firestore, "hostels", editingHostel.id);
       await updateDoc(hostelDocRef, { name, type });
 
-      // Also update hostelName in all associated rooms
       if (editingHostel.name !== name) {
           const batch = writeBatch(firestore);
           const roomsToUpdateQuery = query(collection(firestore, "hostelRooms"), where("hostelId", "==", editingHostel.id));
@@ -190,11 +190,10 @@ export default function HostelManagement() {
   const handleEditOccupant = (occupant: {studentName: string}) => {
     const student = students?.find(s => s.name === occupant.studentName);
     if (student) {
-        // Create a fake application object to pass to the dialog
         const application: AdmissionApplication = {
             id: student.id,
             studentName: student.name,
-            gender: 'N/A', // Gender may not be available on student, can be improved
+            gender: 'N/A',
             applyingForGrade: student.class,
             parentName: 'N/A',
             parentEmail: 'N/A',
@@ -247,6 +246,35 @@ export default function HostelManagement() {
     }
   };
 
+  const handleDeleteAllRooms = async () => {
+    if (!firestore) return;
+    try {
+        const batch = writeBatch(firestore);
+        const roomsSnapshot = await getDocs(collection(firestore, "hostelRooms"));
+        roomsSnapshot.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+        toast({ title: "All Rooms Deleted", description: "All hostel rooms have been cleared.", variant: "destructive" });
+    } catch (e) {
+        toast({ title: "Error", description: "Could not delete all rooms.", variant: "destructive" });
+    }
+  };
+
+  const handleDeleteAllHostels = async () => {
+    if (!firestore) return;
+    try {
+        const batch = writeBatch(firestore);
+        const hostelsSnapshot = await getDocs(collection(firestore, "hostels"));
+        hostelsSnapshot.forEach(doc => batch.delete(doc.ref));
+
+        const roomsSnapshot = await getDocs(collection(firestore, "hostelRooms"));
+        roomsSnapshot.forEach(doc => batch.delete(doc.ref));
+        
+        await batch.commit();
+        toast({ title: "All Hostel Data Deleted", description: "All hostels and rooms have been cleared.", variant: "destructive" });
+    } catch (e) {
+        toast({ title: "Error", description: "Could not delete all hostel data.", variant: "destructive" });
+    }
+  };
 
   return (
     <>
@@ -266,7 +294,26 @@ export default function HostelManagement() {
             </TabsList>
 
             <TabsContent value="rooms" className="mt-4">
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-end gap-2 mb-4">
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                            <Trash className="mr-2 h-4 w-4" /> Delete All Rooms
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently delete all hostel rooms and remove all occupants.
+                        </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAllRooms}>Continue</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
                  <Button onClick={handleAddNewRoom} size="sm">
                     <PlusCircle className="mr-2 h-4 w-4" /> Add New Room
                 </Button>
@@ -321,7 +368,26 @@ export default function HostelManagement() {
             </TabsContent>
 
             <TabsContent value="hostels" className="mt-4">
-                <div className="flex justify-end mb-4">
+                <div className="flex justify-end gap-2 mb-4">
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                                <Trash className="mr-2 h-4 w-4" /> Delete All Hostels
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete all hostels and rooms.
+                            </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteAllHostels}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                     <Button onClick={handleAddNewHostel} size="sm">
                         <PlusCircle className="mr-2 h-4 w-4" /> Add New Hostel
                     </Button>
@@ -486,4 +552,3 @@ export default function HostelManagement() {
     </>
   );
 }
-
