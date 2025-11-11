@@ -9,33 +9,18 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Allow public read access for notices, but only authenticated writes.
-    match /notices/{noticeId} {
+    // This rule allows any client to read from any collection,
+    // but only authenticated users can write. This is necessary because
+    // the app's DataContext loads all collections on startup, even
+    // for unauthenticated users on the login page.
+    match /{path=**} {
       allow read: if true;
       allow write: if isSignedIn();
     }
 
-    // Allow public read access for hostel fees, but only authenticated writes.
-    match /hostelFees/{feeId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-    
-    // Allow public read access for tuition fees, but only authenticated writes.
-    match /fees/{feeId} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-
-    // Allow signed-in users to read and write to all other collections.
-    // This is a broad rule for development and can be refined later
-    // for more granular, role-based access control.
-    match /{document=**} {
-      allow read, write: if isSignedIn();
-    }
-
-    // This rule is overridden by the one above, but is a good example
-    // of more specific user-based document access.
+    // This rule is a good example of more specific user-based document access,
+    // though it is currently superseded by the broader rule above.
+    // You could tighten security later by restricting read access based on roles.
     match /users/{userId} {
       allow read, write: if request.auth.uid == userId;
     }
